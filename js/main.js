@@ -26,10 +26,10 @@ function main() {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mainLight.castShadow = true;
-    mainLight.shadow.mapSize.width = 2048; // default
-    mainLight.shadow.mapSize.height = 2048; // default
+    mainLight.shadow.mapSize.width = 2048*2; // default
+    mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
-    mainLight.shadow.camera.far = 500; // default
+    mainLight.shadow.camera.far = 200; // default
 
     const scene = new THREE.Scene();
     {
@@ -68,17 +68,6 @@ function main() {
         //makeInstance(geometry, 0x8844aa, -2),
         //makeInstance(geometry, 0xaa8844,  2),
     ];
-
-    {
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load(
-            'assets/textures/skybox.png',
-            () => {
-                const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
-                rt.fromEquirectangularTexture(renderer, texture);
-                scene.background = rt;
-            });
-    }
 
     {
         const loader = new THREE.TextureLoader();
@@ -167,8 +156,8 @@ function main() {
             cube.rotation.y = rot;
         });
 
-        mainLight.position.z = Math.sin(time);
-        mainLight.position.x = Math.cos(time);
+        mainLight.position.z = 2*Math.sin(time);
+        mainLight.position.x = 2*Math.cos(time);
 
         renderer.render(scene, camera);
 
