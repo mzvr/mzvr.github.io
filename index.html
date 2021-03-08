@@ -2,9 +2,30 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>ThreeJS Proof of Concept</title>
+    <script type="module" src="js/main.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #water-mark {
+            position: absolute;
+            bottom: 1em;
+            right: 1em;
+            fill: red;
+            z-index: 99;
+        }
+    </style>
 </head>
 <body>
-Body Text
+    <canvas id="c"></canvas>
+    <div id="water-mark"><img src="assets/textures/UofAlogo.png" width="vh" height="vh"></img></div>
 </body>
 </html>
