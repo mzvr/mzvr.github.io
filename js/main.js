@@ -36,7 +36,7 @@ function main() {
         const color = 0xFFFFFF;
         const intensity = 1;
         const light = new THREE.DirectionalLight(color, intensity);
-        mainLight.position.set(-1, 2, 4);
+        mainLight.position.set(Math.cos(0), 2, Math.sin(0));
         scene.add(mainLight);
     }
 
@@ -89,6 +89,16 @@ function main() {
             renderer.setSize(width, height, false);
         }
         return needResize;
+    }
+
+
+    var sun;
+    {
+       const geometry = new THREE.SphereGeometry(.1,32,32);
+       const material = new THREE.MeshBasicMaterial(0xffffff);
+       sun = new THREE.Mesh( geometry, material );
+       sun.position.set(Math.cos(0), 2, Math.sin(0));
+       scene.add( sun );
     }
 
     {
@@ -158,6 +168,9 @@ function main() {
 
         mainLight.position.z = 2*Math.sin(time);
         mainLight.position.x = 2*Math.cos(time);
+
+        sun.position.z = 2*Math.sin(time);
+        sun.position.x = 2*Math.cos(time);
 
         renderer.render(scene, camera);
 
