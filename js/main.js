@@ -1,9 +1,23 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 import { FBXLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/FBXLoader.js';
+import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
 
+function createStats() {
+    var stats = new Stats();
+    stats.setMode(0);
+
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.left = '0';
+    stats.domElement.style.top = '0';
+
+    return stats;
+}
 
 function main() {
+    var stats = createStats();
+    document.body.appendChild( stats.domElement );
+
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
 
@@ -30,6 +44,7 @@ function main() {
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
     mainLight.shadow.camera.far = 200; // default
+
 
     const scene = new THREE.Scene();
     {
@@ -151,7 +166,9 @@ function main() {
     }
 
     function render(time) {
-        time *= 0.001;
+        stats.update();
+
+        time *= 0.0003;
 
         if (resizeRendererToDisplaySize(renderer)) {
             const canvas = renderer.domElement;
