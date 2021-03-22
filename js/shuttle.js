@@ -147,6 +147,9 @@ function main() {
                 //const helper2 = new VertexTangentsHelper( gltf.scene.children[0], .1, 0x00ffff, 1 );
                 //scene.add( helper2 );
 
+                //https://mzvr.github.io/assets/models/shuttle/2048xShuttleNormal.png
+                //https://mzvr.github.io/assets/textures/octo/octotexture.png
+
                 //console.log(gltf.scene.children[0]);
                 scene.add(gltf.scene.children[0]);
 
