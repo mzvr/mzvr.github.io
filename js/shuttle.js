@@ -107,10 +107,10 @@ function main() {
     }
 
     {
-        const albedo = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleAlbedo.png');
-        const normal = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleNormal.png');
+        const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAlbedo.png');
+        const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleNormal.png');
         //normal.encoding = THREE.LinearEncoding;
-        const AO = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleAO.png');
+        const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAO.png');
 
         albedo.flipY = true;
         normal.flipY = false;
@@ -124,7 +124,7 @@ function main() {
 
         const loader = new GLTFLoader();
         loader.load(
-            'assets/models/shuttle/shuttle.glb',
+            './assets/models/shuttle/shuttle.glb',
             // called when the resource is loaded
             function ( gltf ) {
 
@@ -147,6 +147,10 @@ function main() {
                 //const helper2 = new VertexTangentsHelper( gltf.scene.children[0], .1, 0x00ffff, 1 );
                 //scene.add( helper2 );
 
+
+
+
+                //https://mzvr.github.io/assets/models/shuttle/
                 //https://mzvr.github.io/assets/models/shuttle/2048xShuttleNormal.png
                 //https://mzvr.github.io/assets/textures/octo/octotexture.png
 
