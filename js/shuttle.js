@@ -53,6 +53,7 @@ function main() {
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
     mainLight.shadow.camera.far = 200; // default
+    mainLight.shadow.normalBias = 0.01;
 
     const scene = new THREE.Scene();
 
@@ -119,8 +120,6 @@ function main() {
         var lambert = new THREE.MeshStandardMaterial({map: albedo, color:0xffffff, normalMap: normal, roughness: 0.6});
         lambert.normalMapType = THREE.TangentSpaceNormalMap;
         lambert.vertexTangents = true;
-
-
 
         const loader = new GLTFLoader();
         loader.load(
