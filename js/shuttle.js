@@ -72,7 +72,6 @@ function main() {
     scene.background = new THREE.Color('red');
     //renderer.toneMapping = THREE.NoToneMapping;
 
-
     {
         const loader = new THREE.TextureLoader();
         const texture = loader.load(
@@ -110,43 +109,24 @@ function main() {
     {
         const albedo = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleAlbedo.png');
         const normal = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleNormal.png');
-        const normal2 = new THREE.TextureLoader().load( 'assets/models/shuttle/Shuttle2Norm.png');
         //normal.encoding = THREE.LinearEncoding;
         const AO = new THREE.TextureLoader().load( 'assets/models/shuttle/2048xShuttleAO.png');
 
         albedo.flipY = true;
         normal.flipY = false;
-        normal2.flipY = true;
         //AO.flipY = false;
 
         var lambert = new THREE.MeshStandardMaterial({map: albedo, color:0xffffff, normalMap: normal, roughness: 0.6});
         lambert.normalMapType = THREE.TangentSpaceNormalMap;
         lambert.vertexTangents = true;
 
-        const loader = new FBXLoader();
-        loader.load('assets/models/shuttle/shuttle2.fbx', function (object) {
-            var geometry = [];
 
-            object.traverse(function (child) {
-                if (child.isMesh) {
-                    geometry.push(child);
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    child.geometry.scale(0.0006, 0.0006, 0.0006);
-                }
-            });
-            geometry[0].material = lambert;
-            //geometry[0].scale.set(3,3,3);
-            //scene.add(geometry[0]);
-        });
 
-        const loader2 = new GLTFLoader();
-        loader2.load(
-            'assets/models/shuttle/shuttle.gltf',
+        const loader = new GLTFLoader();
+        loader.load(
+            'assets/models/shuttle/shuttle.glb',
             // called when the resource is loaded
             function ( gltf ) {
-
-                //scene.add( gltf.scene );
 
                 gltf.animations; // Array<THREE.AnimationClip>
                 gltf.scene; // THREE.Group
