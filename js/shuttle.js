@@ -112,7 +112,7 @@ function main() {
         //normal.encoding = THREE.LinearEncoding;
         const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAO.png');
 
-        albedo.flipY = true;
+        albedo.flipY = false;
         normal.flipY = false;
         //AO.flipY = false;
 
