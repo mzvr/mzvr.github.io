@@ -52,12 +52,14 @@ function main() {
     mainLight.shadow.mapSize.width = 2048*2; // default
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
-    mainLight.shadow.camera.far = 200; // default
+    mainLight.shadow.camera.far = 50; // default
     mainLight.shadow.normalBias = 0.01;
+    const ambLight = new THREE.AmbientLight( 0x404040 );
 
     const scene = new THREE.Scene();
 
     scene.add(mainLight);
+    scene.add(ambLight);
 
     const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
     const renderScene = new RenderPass( scene, camera );
