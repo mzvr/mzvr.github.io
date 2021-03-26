@@ -3,10 +3,9 @@ import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/cont
 import { FBXLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/FBXLoader.js';
 import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
 import { ShaderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/ShaderPass.js';
-import { EffectComposer } from './ThreeJs/EffectComposer.js';
-
+import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
-import { UnrealBloomPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { UnrealBloomPass } from './ThreeJS/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
     
@@ -96,10 +95,12 @@ function main() {
     const composer = new EffectComposer( renderer );
 
     composer.addPass( renderScene );
-    composer.addPass( bloomPass, renderTarget3 );
-    composer.addPass( new ShaderPass( GammaCorrectionShader ) );
     
-
+    composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+    composer.addPass( bloomPass );
+    
+    
+    console.log(bloomPass);
     
 
     
