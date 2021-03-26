@@ -3,12 +3,13 @@ import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/cont
 import { FBXLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/FBXLoader.js';
 import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
 import { ShaderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/ShaderPass.js';
-import { EffectComposer } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/EffectComposer.js';
+import { EffectComposer } from './ThreeJs/EffectComposer.js';
+
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';
-
-
+import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
+    
 function createStats() {
     var stats = new Stats();
     stats.setMode(0);
@@ -20,13 +21,23 @@ function createStats() {
     return stats;
 }
 
+const params = {
+    exposure: 1,
+    bloomStrength: 1.5,
+    bloomThreshold: 0,
+    bloomRadius: 0
+};
+
 function main() {
     var stats = createStats();
+
+    const gui = new GUI();
+
     document.body.appendChild( stats.domElement );
 
     const canvas = document.querySelector('#c');
-    const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
-    const composer = new EffectComposer( renderer );
+    const renderer = new THREE.WebGLRenderer({canvas});
+    
 
     const fov = 70;
     const aspect = 2;  // the canvas default
@@ -49,24 +60,49 @@ function main() {
     mainLight.shadow.mapSize.width = 2048*2; // default
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
-    mainLight.shadow.camera.far = 200; // default
+    mainLight.shadow.camera.far = 100; // default
+
+    const ambLight = new THREE.AmbientLight( 0x404040 );
 
     const scene = new THREE.Scene();
 
     scene.add(mainLight);
+    scene.add(ambLight);
 
-    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+    scene.background = new THREE.Color('blue');
+    scene.background.convertSRGBToLinear();
+    
+
+
+
+    var param = {
+        type: THREE.FloatType,
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        format: THREE.RGBAFormat,
+        stencilBuffer: false,
+        encoding: THREE.sRGBEncoding
+    };
+
+    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85 );
     const renderScene = new RenderPass( scene, camera );
 
-    bloomPass.threshold = 0.6;
-    bloomPass.strength = 3;
-    bloomPass.radius = 1;
+    let renderTarget1 = new THREE.WebGLRenderTarget( canvas.clientWidth * canvas.clientWidth / canvas.clientHeight, canvas.height * canvas.clientWidth / canvas.clientHeight, param );
+    let renderTarget2 = new THREE.WebGLRenderTarget( canvas.clientWidth * canvas.clientWidth / canvas.clientHeight, canvas.height * canvas.clientWidth / canvas.clientHeight, param );
+    let renderTarget3 = new THREE.WebGLRenderTarget( canvas.clientWidth * canvas.clientWidth / canvas.clientHeight, canvas.height * canvas.clientWidth / canvas.clientHeight, param );
+    let renderTarget4 = new THREE.WebGLRenderTarget( canvas.clientWidth * canvas.clientWidth / canvas.clientHeight, canvas.height * canvas.clientWidth / canvas.clientHeight, param );
+
+
+    const composer = new EffectComposer( renderer );
 
     composer.addPass( renderScene );
-    composer.addPass( bloomPass );
-    //composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+    composer.addPass( bloomPass, renderTarget3 );
+    composer.addPass( new ShaderPass( GammaCorrectionShader ) );
+    
 
-    scene.background = new THREE.Color('red');
+    
+
+    
     //renderer.toneMapping = THREE.NoToneMapping;
     {
         const planeGeometry = new THREE.PlaneBufferGeometry(5, 5, 1);
@@ -82,7 +118,7 @@ function main() {
         const texture = loader.load(
             'https://upload.wikimedia.org/wikipedia/commons/6/60/ESO_-_Milky_Way.jpg',
             () => {
-                //texture.encoding = THREE.sRGBEncoding;
+                texture.encoding = THREE.sRGBEncoding;
                 const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
                 rt.fromEquirectangularTexture(renderer, texture);
                 scene.background = rt;
@@ -98,6 +134,7 @@ function main() {
         if (needResize) {
             renderer.setSize(width, height, false);
             composer.setSize(width, height);
+            //bloomPass.setSize(width, height);
         }
         return needResize;
     }
@@ -112,13 +149,17 @@ function main() {
     }
 
     {
-        var albedo = new THREE.TextureLoader().load( 'assets/textures/octo/octotexture.png');
-        //albedo.encoding = THREE.sRGBEncoding;
+        const albedo = new THREE.TextureLoader().load( 'assets/textures/octo/octotexture.png');
+        albedo.encoding = THREE.sRGBEncoding;
         const normal = new THREE.TextureLoader().load( 'assets/textures/octo/octonorm.png');
+        normal.encoding = THREE.LinearEncoding;
         const smoothness = new THREE.TextureLoader().load( 'assets/textures/octo/octorough.png');
+        smoothness.encoding = THREE.LinearEncoding;
 
 
         var lambert = new THREE.MeshStandardMaterial({color:0xffffff, map: albedo, normalMap: normal, roughnessMap: smoothness});
+
+        lambert.color.setHex( 0xffffff ).convertSRGBToLinear();
 
         // model
         const loader = new FBXLoader();
@@ -167,7 +208,31 @@ function main() {
 
     renderer.physicallyCorrectLights = true;
     renderer.gammaFactor = 2.2;
-    //renderer.outputEncoding = THREE.sRGBEncoding;
+    //renderer.outputEncoding = THREE.LinearEncoding ;
+
+    gui.add( params, 'exposure', 0.1, 2 ).onChange( function ( value ) {
+
+        renderer.gammaFactor = Math.pow( value, 4.0 );
+
+    } );
+
+    gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( function ( value ) {
+
+        bloomPass.threshold = Number( value );
+
+    } );
+
+    gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( function ( value ) {
+
+        bloomPass.strength = Number( value );
+
+    } );
+
+    gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+
+        bloomPass.radius = Number( value );
+
+    } );
 
     function render(time) {
         stats.update();

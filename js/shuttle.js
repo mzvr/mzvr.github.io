@@ -54,7 +54,7 @@ function main() {
     mainLight.shadow.camera.near = 0.5; // default
     mainLight.shadow.camera.far = 50; // default
     mainLight.shadow.normalBias = 0.01;
-    const ambLight = new THREE.AmbientLight( 0x404040 );
+    const ambLight = new THREE.AmbientLight( 0x43556e );
 
     const scene = new THREE.Scene();
 
@@ -78,7 +78,7 @@ function main() {
     {
         const loader = new THREE.TextureLoader();
         const texture = loader.load(
-            'https://upload.wikimedia.org/wikipedia/commons/6/60/ESO_-_Milky_Way.jpg',
+            './assets/textures/skybox/skybox.png',
             () => {
                 //texture.encoding = THREE.sRGBEncoding;
                 const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
