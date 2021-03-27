@@ -116,7 +116,7 @@ var UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 	this.compositeMaterial.uniforms[ 'blurTexture4' ].value = this.renderTargetsVertical[ 3 ].texture;
 	this.compositeMaterial.uniforms[ 'blurTexture5' ].value = this.renderTargetsVertical[ 4 ].texture;
 	this.compositeMaterial.uniforms[ 'bloomStrength' ].value = strength;
-	this.compositeMaterial.uniforms[ 'bloomRadius' ].value = 0.1;
+	this.compositeMaterial.uniforms[ 'bloomRadius' ].value = this.radius;
 	this.compositeMaterial.needsUpdate = true;
 
 	var bloomFactors = [ 1.0, 0.8, 0.6, 0.4, 0.2 ];
@@ -369,7 +369,6 @@ UnrealBloomPass.prototype = Object.assign( Object.create( Pass.prototype ), {
 				'blurTexture3': { value: null },
 				'blurTexture4': { value: null },
 				'blurTexture5': { value: null },
-				'dirtTexture': { value: null },
 				'bloomStrength': { value: 1.0 },
 				'bloomFactors': { value: null },
 				'bloomTintColors': { value: null },
@@ -390,7 +389,6 @@ UnrealBloomPass.prototype = Object.assign( Object.create( Pass.prototype ), {
 				uniform sampler2D blurTexture3;\
 				uniform sampler2D blurTexture4;\
 				uniform sampler2D blurTexture5;\
-				uniform sampler2D dirtTexture;\
 				uniform float bloomStrength;\
 				uniform float bloomRadius;\
 				uniform float bloomFactors[NUM_MIPS];\

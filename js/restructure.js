@@ -21,10 +21,15 @@ let mainLight, sun;
 
 const params = {
     exposure: 2.2,
-    bloomStrength: 0.7,
-    bloomThreshold: 0.5,
-    bloomRadius: 1.0
+    brightness: 5,
+    bloomStrength: 0.1,
+    bloomThreshold: 0.04,
+    bloomRadius: 0.0,
+    sunRotation: -2.54
 };
+
+const sunDist = 5;
+const sunHeight = 1;
 
 init();
 animate();
@@ -61,7 +66,9 @@ function init() {
     const near = 0.1;
     const far = 1000;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-    camera.position.z = 3;
+    camera.position.z = 2;
+    camera.position.x = 3;
+    camera.position.y = 1;
 
     // camera controls setup
     controls = new OrbitControls(camera, canvas);
@@ -69,8 +76,10 @@ function init() {
     controls.update();
 
     // sun setep
-    mainLight = new THREE.DirectionalLight(0xFFFFFF, 3);
-    mainLight.position.set(Math.cos(0), 1, Math.sin(0));
+    mainLight = new THREE.DirectionalLight(0xFFFFFF, params.brightness);
+    mainLight.position.y = sunHeight;
+    mainLight.position.z = sunDist*Math.sin(params.sunRotation);
+    mainLight.position.x = sunDist*Math.cos(params.sunRotation);
     scene.add(mainLight);
 
     renderer.shadowMap.enabled = true;
@@ -80,10 +89,10 @@ function init() {
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
     mainLight.shadow.camera.far = 20; // default
-    mainLight.shadow.normalBias = 0.01;
+    mainLight.shadow.normalBias = 0.007;
 
     // ambient light setup
-    const ambLight = new THREE.AmbientLight( 0x020210 );
+    const ambLight = new THREE.AmbientLight( 0x020408 );
     scene.add(ambLight);
 
     composer = new EffectComposer( renderer );
@@ -91,10 +100,11 @@ function init() {
     renderScene = new RenderPass( scene, camera );
     composer.addPass( renderScene );
 
-    bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85 );
+    bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
     composer.addPass( bloomPass );
 
     gammaPass = new ShaderPass( GammaCorrectionShader );
+    gammaPass.uniforms.gamma.value = params.exposure;
     composer.addPass( gammaPass );
 
     SMAApass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
@@ -120,28 +130,32 @@ function init() {
                 //scene.background.convertSRGBToLinear();
             });
     }
+    
 
     {
-       const geometry = new THREE.SphereGeometry(.1,32,32);
-       const material = new THREE.MeshBasicMaterial(0xffffff);
-       sun = new THREE.Mesh( geometry, material );
-       sun.position.set(Math.cos(0), 1, Math.sin(0));
-       scene.add( sun );
+        const geometry = new THREE.SphereGeometry(.1,32,32);
+        const material = new THREE.MeshBasicMaterial(0xffffff);
+        sun = new THREE.Mesh( geometry, material );
+        sun.position.y = sunHeight;
+        sun.position.z = sunDist*Math.sin(params.sunRotation);
+        sun.position.x = sunDist*Math.cos(params.sunRotation);
+        scene.add( sun );
     }
 
     {
         const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAlbedo.png');
+        albedo.encoding = THREE.sRGBEncoding;
         const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleNormal.png');
-        //normal.encoding = THREE.LinearEncoding;
         const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAO.png');
 
         albedo.flipY = false;
         normal.flipY = false;
-        //AO.flipY = false;
+        AO.flipY = false;
 
-        var lambert = new THREE.MeshStandardMaterial({map: albedo, color:0xffffff, normalMap: normal, roughness: 0.6});
+        var lambert = new THREE.MeshPhysicalMaterial({map: albedo, normalMap: normal, roughness: 1, aoMap: AO});
         lambert.normalMapType = THREE.TangentSpaceNormalMap;
         lambert.vertexTangents = true;
+        lambert.aoMapIntensity = 0.0;
 
         const loader = new GLTFLoader();
         loader.load(
@@ -162,6 +176,7 @@ function init() {
                 gltf.asset; // Object
 
                 gltf.scene.children[0].geometry.computeTangents();
+                gltf.scene.children[0].rotateY(-2.0);
 
                 scene.add(gltf.scene.children[0]);
 
@@ -184,25 +199,29 @@ function init() {
     gui.add( params, 'exposure', 0.1, 5 ).onChange( function ( value ) {
         gammaPass.uniforms.gamma.value = value;
     } );
+    gui.add( params, 'brightness', 0.1, 10 ).onChange( function ( value ) {
+        mainLight.intensity = value;
+    } );
     gui.add( params, 'bloomThreshold', 0.0, 5.0 ).onChange( function ( value ) {
-
         bloomPass.threshold = Number( value );
-
     } );
     gui.add( params, 'bloomStrength', 0.0, 2.0 ).onChange( function ( value ) {
-
         bloomPass.strength = Number( value );
-
     } );
-    gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
-
+    gui.add( params, 'bloomRadius', 0.0, 1.0 ).onChange( function ( value ) {
         bloomPass.radius = Number( value );
+    } );
+    gui.add( params, 'sunRotation', -3.1415, 3.1415 ).onChange( function ( value ) {
+        mainLight.position.z = sunDist*Math.sin(value);
+        mainLight.position.x = sunDist*Math.cos(value);
+        sun.position.z = sunDist*Math.sin(value);
+        sun.position.x = sunDist*Math.cos(value);
     } );
 }
 
 function resizeRendererToDisplaySize(renderer)
     {
-        const canvas = renderer.domElement;
+        //const canvas = renderer.domElement;
         const width = canvas.clientWidth;
         const height = canvas.clientHeight;
         const needResize = canvas.width !== width || canvas.height !== height;
@@ -219,7 +238,7 @@ function animate(time) {
     stats.begin();
 
     if (resizeRendererToDisplaySize(renderer)) {
-        const canvas = renderer.domElement;
+        //const canvas = renderer.domElement;
         camera.aspect = canvas.clientWidth / canvas.clientHeight;
         camera.updateProjectionMatrix();
     }
@@ -233,10 +252,7 @@ function animate(time) {
 
 function render(time) {
     time *= 0.0003;
-    mainLight.position.z = 2*Math.sin(time);
-    mainLight.position.x = 2*Math.cos(time);
-    sun.position.z = 2*Math.sin(time);
-    sun.position.x = 2*Math.cos(time);
+    
 
     composer.render();
 }
