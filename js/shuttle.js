@@ -74,7 +74,6 @@ function main() {
     //composer.addPass( new ShaderPass( GammaCorrectionShader ) );
 
     scene.background = new THREE.Color('red');
-    //renderer.toneMapping = THREE.NoToneMapping;
 
     {
         const loader = new THREE.TextureLoader();

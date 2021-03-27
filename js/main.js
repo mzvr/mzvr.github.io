@@ -80,8 +80,6 @@ function main() {
     composer.addPass( renderScene );
     //composer.addPass( bloomPass );
     composer.addPass( gammaPass );
-    
-    console.log( bloomPass );
 
     //console.log(JSON.stringify(bloomPass, (key, value) => {
     //    if (value !== null && key !== null) return value
@@ -202,19 +200,19 @@ function main() {
 
     gui.add( params, 'bloomThreshold', 0.0, 5.0 ).onChange( function ( value ) {
 
-        bloomPass.threshold = Number( value );
+        //bloomPass.threshold = Number( value );
 
     } );
 
     gui.add( params, 'bloomStrength', 0.0, 2.0 ).onChange( function ( value ) {
 
-        bloomPass.strength = Number( value );
+        //bloomPass.strength = Number( value );
 
     } );
 
     gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
 
-        bloomPass.radius = Number( value );
+        //bloomPass.radius = Number( value );
     } );
 
     function render(time) {
