@@ -29,6 +29,7 @@ function main() {
 
     const canvas = document.querySelector('#c');
     const renderer = new THREE.WebGLRenderer({antialias: true, canvas});
+    //renderer.toneMapping = THREE.ACESFilmicToneMapping;
     const composer = new EffectComposer( renderer );
 
     const fov = 70;
