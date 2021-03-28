@@ -74,11 +74,11 @@ function main() {
     const composer = new EffectComposer( renderer );
     
     const renderScene = new RenderPass( scene, camera );
-    //const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
+    const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
     const gammaPass = new ShaderPass( GammaCorrectionShader );
 
     composer.addPass( renderScene );
-    //composer.addPass( bloomPass );
+    composer.addPass( bloomPass );
     composer.addPass( gammaPass );
 
     //console.log(JSON.stringify(bloomPass, (key, value) => {

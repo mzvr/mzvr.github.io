@@ -2,10 +2,9 @@
  * @author alteredq / http://alteredqualia.com/
  */
 
- import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
-
  import {
 	Clock,
+	FloatType,
 	LinearFilter,
 	Mesh,
 	OrthographicCamera,
@@ -31,7 +30,7 @@ var EffectComposer = function ( renderer, renderTarget ) {
 			magFilter: LinearFilter,
 			format: RGBAFormat,
 			stencilBuffer: false,
-            type: THREE.FloatType
+            type: FloatType
 		};
 
 		var size = renderer.getSize( new Vector2() );

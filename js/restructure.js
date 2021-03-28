@@ -1,7 +1,10 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
+
 import { FBXLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
+
+import { Lensflare, LensflareElement } from './ThreeJS/Lensflare.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -22,14 +25,15 @@ let mainLight, sun;
 const params = {
     exposure: 2.2,
     brightness: 5,
-    bloomStrength: 0.1,
+    bloomStrength: 0.26,
     bloomThreshold: 0.04,
     bloomRadius: 0.0,
-    sunRotation: -2.54
+    sunRotation: -2.54,
+    ambientLight: 0x4d4d64
 };
 
 const sunDist = 5;
-const sunHeight = 1;
+const sunHeight = 2;
 
 init();
 animate();
@@ -82,6 +86,17 @@ function init() {
     mainLight.position.x = sunDist*Math.cos(params.sunRotation);
     scene.add(mainLight);
 
+    /*// Lens flare
+    const textureLoader = new THREE.TextureLoader();
+    const textureFlare0 = textureLoader.load( "./assets/textures/sprites/FlareTest2.png" );
+    textureFlare0.encoding = THREE.sRGBEncoding;
+    const lensflare = new Lensflare();
+    lensflare.addElement( new LensflareElement( textureFlare0, 256, 0 ) );
+    lensflare.addElement( new LensflareElement( textureFlare0, 128, 0.1 ) );
+    lensflare.addElement( new LensflareElement( textureFlare0, 80, 0.2 ) );
+    lensflare.addElement( new LensflareElement( textureFlare0, 60, -0.25 ) );
+    mainLight.add( lensflare );*/
+
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mainLight.castShadow = true;
@@ -92,7 +107,8 @@ function init() {
     mainLight.shadow.normalBias = 0.007;
 
     // ambient light setup
-    const ambLight = new THREE.AmbientLight( 0x020408 );
+    const ambLight = new THREE.AmbientLight( params.ambientLight );
+    ambLight.color.convertSRGBToLinear();
     scene.add(ambLight);
 
     composer = new EffectComposer( renderer );
@@ -110,12 +126,13 @@ function init() {
     SMAApass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
 	composer.addPass( SMAApass );
 
-    const filmPass = new FilmPass(
+    /*const filmPass = new FilmPass(
         0.3,   // noise intensity
         0.0,  // scanline intensity
         606,    // scanline count
         false,  // grayscale
     );
+    composer.addPass( filmPass );*/
 
     // skybox setup
     {
@@ -143,19 +160,19 @@ function init() {
     }
 
     {
-        const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAlbedo.png');
+        const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2kAlbedo.png');
         albedo.encoding = THREE.sRGBEncoding;
-        const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleNormal.png');
-        const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2048xShuttleAO.png');
+        const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2kNormal.png');
+        const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2kAO.png');
 
         albedo.flipY = false;
         normal.flipY = false;
         AO.flipY = false;
 
-        var lambert = new THREE.MeshPhysicalMaterial({map: albedo, normalMap: normal, roughness: 1, aoMap: AO});
+        var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, aoMap: AO });
         lambert.normalMapType = THREE.TangentSpaceNormalMap;
         lambert.vertexTangents = true;
-        lambert.aoMapIntensity = 0.0;
+        lambert.aoMapIntensity = 0.5;
 
         const loader = new GLTFLoader();
         loader.load(
@@ -166,17 +183,18 @@ function init() {
                 gltf.animations; // Array<THREE.AnimationClip>
                 gltf.scene; // THREE.Group
                 gltf.scenes; // Array<THREE.Group>
-                gltf.scene.children[0].material = lambert;
-                gltf.scene.children[0].scale.set(0.1,0.1,0.1);
-                //gltf.scene.children[0].geometry.computeVertexNormals();
-
-                gltf.scene.children[0].castShadow = true;
-                gltf.scene.children[0].receiveShadow = true;
                 gltf.cameras; // Array<THREE.Camera>
                 gltf.asset; // Object
 
+                
+                gltf.scene.children[0].scale.set(0.1,0.1,0.1);
                 gltf.scene.children[0].geometry.computeTangents();
+                //gltf.scene.children[0].geometry.computeVertexNormals();
+                gltf.scene.children[0].castShadow = true;
+                gltf.scene.children[0].receiveShadow = true;
                 gltf.scene.children[0].rotateY(-2.0);
+                gltf.scene.children[0].material = lambert;
+                
 
                 scene.add(gltf.scene.children[0]);
 
@@ -217,6 +235,13 @@ function init() {
         sun.position.z = sunDist*Math.sin(value);
         sun.position.x = sunDist*Math.cos(value);
     } );
+   
+
+    gui.addColor( params, 'ambientLight' )
+        .onChange( function() { 
+            ambLight.color.set( params.ambientLight);
+            ambLight.color.convertSRGBToLinear();
+         } );
 }
 
 function resizeRendererToDisplaySize(renderer)
