@@ -5,6 +5,7 @@
  import {
 	Clock,
 	FloatType,
+	HalfFloatType,
 	LinearFilter,
 	Mesh,
 	OrthographicCamera,
@@ -30,7 +31,7 @@ var EffectComposer = function ( renderer, renderTarget ) {
 			magFilter: LinearFilter,
 			format: RGBAFormat,
 			stencilBuffer: false,
-            type: FloatType
+            type: HalfFloatType
 		};
 
 		var size = renderer.getSize( new Vector2() );

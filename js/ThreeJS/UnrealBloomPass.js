@@ -2,6 +2,7 @@ import {
 	AdditiveBlending,
 	Color,
     FloatType,
+	HalfFloatType,
 	LinearFilter,
 	MeshBasicMaterial,
 	RGBAFormat,
@@ -37,7 +38,7 @@ var UnrealBloomPass = function ( resolution, strength, radius, threshold ) {
 	this.clearColor = new Color( 0, 0, 0 );
 
 	// render targets
-	var pars = { minFilter: LinearFilter, magFilter: LinearFilter, format: RGBAFormat, type: FloatType };
+	var pars = { minFilter: LinearFilter, magFilter: LinearFilter, format: RGBAFormat, type: HalfFloatType };
 	this.renderTargetsHorizontal = [];
 	this.renderTargetsVertical = [];
 	this.nMips = 5;
