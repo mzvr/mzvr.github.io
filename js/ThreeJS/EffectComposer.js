@@ -291,7 +291,6 @@ Pass.FullScreenQuad = ( function () {
 		set: function ( value ) {
 
 			this._mesh.material = value;
-
 		}
 
 	} );

@@ -3,27 +3,28 @@ import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { FBXLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/FBXLoader.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
 
-import { Lensflare, LensflareElement } from './ThreeJS/Lensflare.js';
+import { Lensflare, LensflareElement } from 'https://unpkg.com/three@0.126.1/examples/jsm/objects/Lensflare.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from './ThreeJS/UnrealBloomPass.js';
-import { GammaCorrectionShader } from './ThreeJS/GammaCorrectionShader.js';
+import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';
+import { ACESFilmicToneMappingShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/ACESFilmicToneMappingShader.js';
 import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/SMAAPass.js';
 import { FilmPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/FilmPass.js';
 
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
 import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
+import { VertexTangentsHelper } from 'https://unpkg.com/three@0.126.1/examples/jsm/helpers/VertexTangentsHelper.js';
 
 let canvas, stats;
 let camera, scene, renderer, composer, controls;
-let renderScene, bloomPass, gammaPass, SMAApass;
+let renderScene, bloomPass, ACESPass, gammaPass, SMAApass;
 let mainLight, sun;
 
 const params = {
-    exposure: 2.2,
     brightness: 5,
     bloomStrength: 0.26,
     bloomThreshold: 0.04,
@@ -86,8 +87,8 @@ function init() {
     mainLight.position.x = sunDist*Math.cos(params.sunRotation);
     scene.add(mainLight);
 
-    /*// Lens flare
-    const textureLoader = new THREE.TextureLoader();
+    // Lens flare
+    /*const textureLoader = new THREE.TextureLoader();
     const textureFlare0 = textureLoader.load( "./assets/textures/sprites/FlareTest2.png" );
     textureFlare0.encoding = THREE.sRGBEncoding;
     const lensflare = new Lensflare();
@@ -116,18 +117,22 @@ function init() {
     renderScene = new RenderPass( scene, camera );
     composer.addPass( renderScene );
 
+    
+
     bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
     composer.addPass( bloomPass );
 
+    //ACESPass = new ShaderPass( ACESFilmicToneMappingShader );
+    //composer.addPass( ACESPass );
+
     gammaPass = new ShaderPass( GammaCorrectionShader );
-    gammaPass.uniforms.gamma.value = params.exposure;
     composer.addPass( gammaPass );
 
     SMAApass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
 	composer.addPass( SMAApass );
 
     /*const filmPass = new FilmPass(
-        0.3,   // noise intensity
+        0.06,   // noise intensity
         0.0,  // scanline intensity
         606,    // scanline count
         false,  // grayscale
@@ -144,7 +149,6 @@ function init() {
                 const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
                 rt.fromEquirectangularTexture(renderer, texture);
                 scene.background = rt;
-                //scene.background.convertSRGBToLinear();
             });
     }
     
@@ -160,20 +164,6 @@ function init() {
     }
 
     {
-        const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2kAlbedo.png');
-        albedo.encoding = THREE.sRGBEncoding;
-        const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2kNormal.png');
-        const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2kAO.png');
-
-        albedo.flipY = false;
-        normal.flipY = false;
-        AO.flipY = false;
-
-        var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, aoMap: AO });
-        lambert.normalMapType = THREE.TangentSpaceNormalMap;
-        lambert.vertexTangents = true;
-        lambert.aoMapIntensity = 0.5;
-
         const loader = new GLTFLoader();
         loader.load(
             './assets/models/shuttle/shuttle.glb',
@@ -186,13 +176,29 @@ function init() {
                 gltf.cameras; // Array<THREE.Camera>
                 gltf.asset; // Object
 
-                
-                gltf.scene.children[0].scale.set(0.1,0.1,0.1);
                 gltf.scene.children[0].geometry.computeTangents();
+                gltf.scene.children[0].scale.set(0.1,0.1,0.1);
                 //gltf.scene.children[0].geometry.computeVertexNormals();
                 gltf.scene.children[0].castShadow = true;
                 gltf.scene.children[0].receiveShadow = true;
                 gltf.scene.children[0].rotateY(-2.0);
+
+                //const helper = new VertexTangentsHelper( gltf.scene.children[0], .1, 0x00ffff, 1 );
+                //scene.add(helper);
+
+                const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2kAlbedo.png');
+                albedo.encoding = THREE.sRGBEncoding;
+                const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2kNormal.png');
+                normal.encoding = THREE.LinearEncoding;
+                //const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2kAO.png');
+                //AO.encoding = THREE.LinearEncoding;
+
+                albedo.flipY = false;
+                normal.flipY = false;
+                //AO.flipY = false;
+
+                var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
+                //lambert.aoMapIntensity = 1;
                 gltf.scene.children[0].material = lambert;
                 
 
@@ -214,9 +220,6 @@ function init() {
         );
     }
 
-    gui.add( params, 'exposure', 0.1, 5 ).onChange( function ( value ) {
-        gammaPass.uniforms.gamma.value = value;
-    } );
     gui.add( params, 'brightness', 0.1, 10 ).onChange( function ( value ) {
         mainLight.intensity = value;
     } );
@@ -235,13 +238,11 @@ function init() {
         sun.position.z = sunDist*Math.sin(value);
         sun.position.x = sunDist*Math.cos(value);
     } );
-   
-
     gui.addColor( params, 'ambientLight' )
         .onChange( function() { 
             ambLight.color.set( params.ambientLight);
             ambLight.color.convertSRGBToLinear();
-         } );
+    } );
 }
 
 function resizeRendererToDisplaySize(renderer)
@@ -253,6 +254,8 @@ function resizeRendererToDisplaySize(renderer)
         if (needResize) {
             renderer.setSize(width, height, false);
             composer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
         }
         return needResize;
     }
@@ -262,11 +265,7 @@ function animate(time) {
     
     stats.begin();
 
-    if (resizeRendererToDisplaySize(renderer)) {
-        //const canvas = renderer.domElement;
-        camera.aspect = canvas.clientWidth / canvas.clientHeight;
-        camera.updateProjectionMatrix();
-    }
+    resizeRendererToDisplaySize(renderer);
 
     render(time);
 
@@ -276,8 +275,5 @@ function animate(time) {
 }
 
 function render(time) {
-    time *= 0.0003;
-    
-
     composer.render();
 }

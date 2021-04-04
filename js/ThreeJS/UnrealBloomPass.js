@@ -296,10 +296,6 @@ UnrealBloomPass.prototype = Object.assign( Object.create( Pass.prototype ), {
 
 	},
 
-	//float gaussianPdf(in float x, in float sigma) {\
-	//	return 0.39894 * exp( -0.5 * x * x/( sigma * sigma))/sigma;\
-	//}\
-
 	getSeperableBlurMaterial: function ( kernelRadius ) {
 
 		return new ShaderMaterial( {

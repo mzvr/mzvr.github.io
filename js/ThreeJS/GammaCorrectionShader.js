@@ -7,8 +7,7 @@
 
 	uniforms: {
 
-		'tDiffuse': { value: null },
-        'gamma': { value: 2.2 }
+		'tDiffuse': { value: null }
 
 	},
 
@@ -37,7 +36,7 @@
 
 		'	vec4 tex = texture2D( tDiffuse, vUv );',
 
-		'	gl_FragColor = LinearToGamma( tex, float( gamma ) );', // optional: LinearToGamma( tex, float( GAMMA_FACTOR ) );
+		'	gl_FragColor = LinearTosRGB( tex );', // optional: LinearToGamma( tex, float( GAMMA_FACTOR ) );
 
 		'}'
 

@@ -8,6 +8,7 @@ import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postpro
 import { UnrealBloomPass } from './ThreeJS/UnrealBloomPass.js';
 import { GammaCorrectionShader } from './ThreeJS/GammaCorrectionShader.js';
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
+import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/SMAAPass.js';
     
 function createStats() {
     var stats = new Stats();
@@ -40,7 +41,7 @@ function main() {
     const fov = 70;
     const aspect = 2;  // the canvas default
     const near = 0.1;
-    const far = 1000;
+    const far = 100;
     const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.z = 3;
 
@@ -76,10 +77,13 @@ function main() {
     const renderScene = new RenderPass( scene, camera );
     const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
     const gammaPass = new ShaderPass( GammaCorrectionShader );
+    const SMAApass = new SMAAPass( window.innerWidth * renderer.getPixelRatio(), window.innerHeight * renderer.getPixelRatio() );
+	
 
     composer.addPass( renderScene );
     composer.addPass( bloomPass );
     composer.addPass( gammaPass );
+    composer.addPass( SMAApass );
 
     //console.log(JSON.stringify(bloomPass, (key, value) => {
     //    if (value !== null && key !== null) return value
@@ -109,18 +113,7 @@ function main() {
             });
     }
 
-    function resizeRendererToDisplaySize(renderer)
-    {
-        const canvas = renderer.domElement;
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
-        const needResize = canvas.width !== width || canvas.height !== height;
-        if (needResize) {
-            renderer.setSize(width, height, false);
-            composer.setSize(width, height);
-        }
-        return needResize;
-    }
+    
 
     var sun;
     {
@@ -183,7 +176,9 @@ function main() {
                 }
             });
 
+            geometry[0].geometry.computeTangents();
             geometry[0].material = octoMat;
+            octoMat.vertexTangents = true;
             geometry[0].translateX(-1);
             scene.add(geometry[0]);
         });
@@ -214,6 +209,19 @@ function main() {
 
         //bloomPass.radius = Number( value );
     } );
+
+    function resizeRendererToDisplaySize(renderer)
+    {
+        const canvas = renderer.domElement;
+        const width = canvas.clientWidth;
+        const height = canvas.clientHeight;
+        const needResize = canvas.width !== width || canvas.height !== height;
+        if (needResize) {
+            renderer.setSize(width, height, false);
+            composer.setSize(width, height);
+        }
+        return needResize;
+    }
 
     function render(time) {
         stats.update();
