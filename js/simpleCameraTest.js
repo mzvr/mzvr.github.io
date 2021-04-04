@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -16,6 +17,11 @@ let renderScene, gammaPass, SMAApass;
 let mainLight;
 let raycaster = new THREE.Raycaster();
 let pointer = new THREE.Vector2();
+
+let controls;
+
+let clickedObject = null;
+let clickTime;
 
 let objects = [];
 
@@ -100,6 +106,8 @@ function init() {
         window.addEventListener( 'resize', onWindowResize );
 
         document.addEventListener( 'pointerdown', onPointerDown );
+        
+        document.addEventListener( 'pointerup', onPointerUp );
     }   
 
     /////////////////////////////////////////////////////////////////////
@@ -120,6 +128,13 @@ function init() {
             scene.add( sphere );
             objects.push( sphere );
         }
+
+        //const controls = new OrbitControls( objects[0], renderer.domElement );
+        controls = new OrbitControls( camera, renderer.domElement );
+        controls.enablePan = false;
+        controls.enableZoom = false;
+        controls.enableDamping = true;
+        //controls.minZoom = 2;
     }
 }
 
@@ -142,14 +157,36 @@ function onPointerDown( event ) {
 
     raycaster.setFromCamera( pointer, camera );
     const intersects = raycaster.intersectObjects( objects );
-    //console.log(intersects);
-    //for ( let i = 0; i < intersects.length; i ++ ) {
-	//	console.log(intersects[i].object.name);
-	//}
+
     if ( intersects.length > 0 ) {
-        scene.background = new THREE.Color(intersects[0].object.name);
+        clickedObject = intersects[0].object;
+        clickTime = totalTime;
+    }
+}
+
+function onPointerUp( event ) {
+    if (clickedObject == null)
+    {
+        return;
+    }
+
+    if (totalTime-clickTime < 0.2)
+    {
+        var offsetVector = camera.position.sub(controls.target);
+
+        controls.target = clickedObject.position;
+        
+        var newPos = controls.target.clone().add(offsetVector);
+
+        camera.position.set(newPos.x, newPos.y, newPos.z);
+        controls.update();
+
+        // set color
+        scene.background = new THREE.Color(clickedObject.name);
         scene.background.convertSRGBToLinear();
     }
+
+    clickedObject = null;
 }
 
 function animate() {
@@ -168,7 +205,7 @@ function animate() {
 }
 
 function update() {
-    camera.position.x = Math.sin(totalTime);
+    controls.update();
 }
 
 function render(time) {
