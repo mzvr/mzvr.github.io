@@ -170,7 +170,17 @@ function onPointerUp( event ) {
         return;
     }
 
-    if (totalTime-clickTime < 0.2)
+    let mouse = new THREE.Vector2();
+
+    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+    let dist = pointer.distanceTo(mouse);
+
+    
+    console.log(dist);
+
+    if (totalTime-clickTime < 0.1 && dist < 0.05)
     {
         var offsetVector = camera.position.sub(controls.target);
 
