@@ -19,12 +19,8 @@ let clock, deltaTime, totalTime;
 let camera, scene, renderer, composer;
 let renderScene, gammaPass, SMAApass;
 let mainLight;
-let raycaster = new THREE.Raycaster();
-let pointer = new THREE.Vector2();
 
 var interactionManager;
-
-let controls;
 
 let objects = [];
 
@@ -128,7 +124,7 @@ function init() {
             objects.push( sphere );
         }
 
-        controls = new OrbitControls( camera, renderer.domElement );
+        let controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = false;
         //controls.enableZoom = false;
         controls.maxDistance = 0.75;
