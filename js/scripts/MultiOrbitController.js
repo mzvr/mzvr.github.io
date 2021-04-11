@@ -25,6 +25,8 @@ class MultiOrbitController {
         }
         this.orbitControls = orbitController;
 
+        //this.tempObject = new THREE.Object3D();
+
         this.needsUpdate = false;
         this.zoomDistance = 0.5;
     }
@@ -33,6 +35,8 @@ class MultiOrbitController {
         
         // pause orbit controls till camera is updated
         this.orbitControls.enabled = false;
+        //this.tempObject.position.copy(this.orbitor.position);
+        //this.orbitControls.object = this.tempObject;
 
         // save orbit offset
         //const offsetVector = this.orbitControls.object.position.sub(this.orbitControls.target);
@@ -50,6 +54,7 @@ class MultiOrbitController {
         totalTime = 0.0;
         this.savedRotation = this.orbitor.quaternion.clone();
         this.savedPosition = this.orbitor.position.clone();
+        //this.savedDistance = 
     }
 
     moveTowards( from, to, step ) {
@@ -106,15 +111,17 @@ class MultiOrbitController {
     }
 
     update(deltaTime) {
+        //console.log(this.tempObject.position);
         if (this.needsUpdate)
         {
             totalTime += deltaTime;
             
-            const alpha = MathUtils.smoothstep(totalTime, 0.0, LengthTime);
+            const alpha = MathUtils.smootherstep(totalTime, 0.0, LengthTime);
 
             if (totalTime>LengthTime)
             {
                 this.orbitControls.enabled = true;
+                //this.orbitControls.object = this.orbitor;
                 this.needsUpdate = false;
                 return;
             }
@@ -142,6 +149,8 @@ class MultiOrbitController {
                 this.orbitControls.enabled = true;
             }*/
         }
+
+        //this.orbitControls.update();
     }
 }
 
