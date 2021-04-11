@@ -49,8 +49,8 @@ class InteractionManager {
         }
     }
 
-    update() {
-        this.multiOrbitController.update();
+    update(deltaTime) {
+        this.multiOrbitController.update(deltaTime);
     }
 }
 

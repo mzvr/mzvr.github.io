@@ -1,7 +1,11 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
+import { MathUtils } from 'https://unpkg.com/three@0.126.1/src/math/MathUtils.js'
+
 
 const stepSize = 0.01;
+const LengthTime = 1.0;
+let totalTime = 0.0;
 
 class MultiOrbitController {
 
@@ -21,7 +25,7 @@ class MultiOrbitController {
         }
         this.orbitControls = orbitController;
 
-        this.needsUpdate = true;
+        this.needsUpdate = false;
         this.zoomDistance = 0.5;
     }
 
@@ -41,10 +45,11 @@ class MultiOrbitController {
 
         // update orbit 
         //this.orbitControls.update();
-
-        //console.log(newTarget);
-
+        
         this.needsUpdate = true;
+        totalTime = 0.0;
+        this.savedRotation = this.orbitor.quaternion.clone();
+        this.savedPosition = this.orbitor.position.clone();
     }
 
     moveTowards( from, to, step ) {
@@ -63,7 +68,7 @@ class MultiOrbitController {
         // from rotation
         var rotation = this.orbitor.quaternion.clone();
 
-        // to rotaion
+        // to rotaion ***stored in object3D***
         this.orbitor.lookAt(this.orbitControls.target);
 
         // estimate distance left to cover
@@ -103,15 +108,39 @@ class MultiOrbitController {
     update(deltaTime) {
         if (this.needsUpdate)
         {
-            const finishedTurn = this.updateLookAt();
-            const finishedMove = this.updateZoom()
+            totalTime += deltaTime;
+            
+            const alpha = MathUtils.smoothstep(totalTime, 0.0, LengthTime);
+
+            if (totalTime>LengthTime)
+            {
+                this.orbitControls.enabled = true;
+                this.needsUpdate = false;
+                return;
+            }
+
+            // direction from orbitor to target
+            const path = this.orbitControls.target.clone().sub(this.orbitor.position);
+            const direction = path.clone().normalize();
+            // location of orbit
+            const orbitOffset = direction.clone().multiplyScalar(-this.zoomDistance);
+            const orbitPos = orbitOffset.clone().add(this.orbitControls.target);
+
+            this.orbitor.position.copy(this.savedPosition.clone().lerp(orbitPos, alpha));
+
+            this.orbitor.lookAt(this.orbitControls.target);
+            var slerp = this.savedRotation.clone().slerp(this.orbitor.quaternion, alpha);
+            this.orbitor.setRotationFromQuaternion(slerp);
+
+            /*const finishedTurn = this.updateLookAt(alpha);
+            const finishedMove = this.updateZoom(alpha)
 
             const finished = finishedMove && finishedTurn;
 
             if (finished) {
                 this.needsUpdate = false;
                 this.orbitControls.enabled = true;
-            }
+            }*/
         }
     }
 }

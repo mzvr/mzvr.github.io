@@ -187,7 +187,7 @@ function animate() {
 }
 
 function update() {
-    interactionManager.update();
+    interactionManager.update(deltaTime);
 
     //controls.update();
 
