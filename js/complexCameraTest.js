@@ -152,28 +152,6 @@ function onWindowResize() {
 
 }
 
-// moves a vec3 towards a vec3 at a set speed
-// returns new position
-function moveTowards( to, from, speed, delta ) {
-    // maximum step size
-    var maxDist = speed * delta;
-
-    // vector between positions
-    var path = to.clone().sub(from);
-
-    // check if distance remaining can be done in one step
-    if (path.lengthSq() <= maxDist*maxDist)
-    {
-        return to;
-    }
-
-    // scale remaining distance to allowed step size
-    path.normalize();
-    path.multiplyScalar(maxDist);
-
-    return from.clone().add(path);
-}
-
 function animate() {
     
     stats.begin();
@@ -190,32 +168,8 @@ function animate() {
 
 function update() {
     interactionManager.update(deltaTime);
-
-    controls.update();
-
-    //camera.position.copy(moveTowards(cameraTracker.position, camera.position, 1, deltaTime));
-    //var quat1 = cameraTracker.quaternion.clone();
-
-    //b.setFromQuaternion(quat1);
-    
-
-    //var rotateY = new THREE.Quaternion();
-
-    //const a = new THREE.Euler( 0,3.1415,0, 'XYZ' );
-    //rotateY.setFromEuler(a);
-
-    //quat1.premultiply(rotateY);
-
-    //var quat2 = camera.quaternion.clone();
-
-    //b.setFromQuaternion(quat2);
-
-    //camera.lookAt(controls.target);
-    //quat2.rotateTowards( quat1, 7 * deltaTime );
-
-    //camera.setRotationFromQuaternion(quat2);
 }
 
-function render(time) {
+function render() {
     composer.render();
 }

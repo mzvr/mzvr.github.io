@@ -16,9 +16,6 @@ class CameraRaycaster {
 
         this.raycaster = new Raycaster();
 
-        document.addEventListener( 'pointerdown', this.onPointerDown );
-        document.addEventListener( 'pointerup', this.onPointerUp );
-
     }
 
     // returns resulting intersections of a screen raycast
