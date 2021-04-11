@@ -127,12 +127,14 @@ function init() {
             scene.add( sphere );
             objects.push( sphere );
         }
-        
+
         controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = false;
-        controls.enableZoom = false;
+        //controls.enableZoom = false;
+        controls.maxDistance = 0.75;
+        controls.minDistance = 0.25;
 
-        //controls.enableDamping = true;
+        controls.enableDamping = true;
 
         var multiController = new MultiOrbitController(camera, controls);
         var raycaster = new CameraRaycaster(camera, objects);
@@ -189,7 +191,7 @@ function animate() {
 function update() {
     interactionManager.update(deltaTime);
 
-    //controls.update();
+    controls.update();
 
     //camera.position.copy(moveTowards(cameraTracker.position, camera.position, 1, deltaTime));
     //var quat1 = cameraTracker.quaternion.clone();

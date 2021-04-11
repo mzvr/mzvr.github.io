@@ -25,7 +25,7 @@ class MultiOrbitController {
         }
         this.orbitControls = orbitController;
 
-        //this.tempObject = new THREE.Object3D();
+        this.tempObject = new THREE.Object3D();
 
         this.needsUpdate = false;
         this.zoomDistance = 0.5;
@@ -34,9 +34,10 @@ class MultiOrbitController {
     setNewTarget( newTarget ) {
         
         // pause orbit controls till camera is updated
-        this.orbitControls.enabled = false;
-        //this.tempObject.position.copy(this.orbitor.position);
-        //this.orbitControls.object = this.tempObject;
+        //this.orbitControls.enabled = false;
+        this.tempObject.position.copy(this.orbitor.position);
+        this.orbitControls.object = this.tempObject;
+        this.orbitControls.enableZoom = false;
 
         // save orbit offset
         //const offsetVector = this.orbitControls.object.position.sub(this.orbitControls.target);
@@ -54,7 +55,7 @@ class MultiOrbitController {
         totalTime = 0.0;
         this.savedRotation = this.orbitor.quaternion.clone();
         this.savedPosition = this.orbitor.position.clone();
-        //this.savedDistance = 
+        this.savedDistance = this.orbitor.position.distanceTo(newTarget);
     }
 
     moveTowards( from, to, step ) {
@@ -111,32 +112,47 @@ class MultiOrbitController {
     }
 
     update(deltaTime) {
-        //console.log(this.tempObject.position);
+
         if (this.needsUpdate)
         {
             totalTime += deltaTime;
             
             const alpha = MathUtils.smootherstep(totalTime, 0.0, LengthTime);
+            var alpha2 = MathUtils.smoothstep(totalTime, 0.0, LengthTime);
 
             if (totalTime>LengthTime)
             {
-                this.orbitControls.enabled = true;
-                //this.orbitControls.object = this.orbitor;
+                //this.orbitControls.enabled = true;
+                this.orbitControls.object = this.orbitor;
                 this.needsUpdate = false;
+                this.orbitControls.enableZoom = true;
                 return;
             }
 
             // direction from orbitor to target
-            const path = this.orbitControls.target.clone().sub(this.orbitor.position);
-            const direction = path.clone().normalize();
+            //const path = this.orbitControls.target.clone().sub(this.orbitor.position);
+            //const direction = path.clone().normalize();
             // location of orbit
-            const orbitOffset = direction.clone().multiplyScalar(-this.zoomDistance);
+            //const orbitOffset = direction.clone().multiplyScalar(-this.zoomDistance);
+            //const orbitPos = orbitOffset.clone().add(this.orbitControls.target);
+
+            // direction from orbitor to target
+            const path = this.orbitControls.object.position.clone().sub(this.orbitControls.target);
+            const direction = path.clone().normalize();
+
+            var length = MathUtils.lerp(this.savedDistance, this.zoomDistance, alpha);
+            // location of orbit
+            const orbitOffset = direction.clone().multiplyScalar(length);
             const orbitPos = orbitOffset.clone().add(this.orbitControls.target);
 
-            this.orbitor.position.copy(this.savedPosition.clone().lerp(orbitPos, alpha));
+            this.orbitor.position.copy(orbitPos);
 
-            this.orbitor.lookAt(this.orbitControls.target);
-            var slerp = this.savedRotation.clone().slerp(this.orbitor.quaternion, alpha);
+            //this.orbitor.lookAt(this.orbitControls.target);
+
+            var objOffset = this.tempObject.position.clone().sub(this.orbitControls.target).add(this.tempObject.position);
+
+            this.tempObject.lookAt(objOffset);
+            var slerp = this.savedRotation.clone().slerp(this.tempObject.quaternion, 1-((1-alpha2)*(1-alpha2)));
             this.orbitor.setRotationFromQuaternion(slerp);
 
             /*const finishedTurn = this.updateLookAt(alpha);
