@@ -10,6 +10,10 @@ import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postproce
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
 import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
 
+import { MultiOrbitController } from './scripts/MultiOrbitController.js';
+import { CameraRaycaster } from './scripts/CameraRaycaster.js';
+import { InteractionManager } from './scripts/InteractionManager.js';
+
 let canvas, stats, gui;
 let clock, deltaTime, totalTime; 
 let camera, scene, renderer, composer;
@@ -18,10 +22,9 @@ let mainLight;
 let raycaster = new THREE.Raycaster();
 let pointer = new THREE.Vector2();
 
-let controls;
+var interactionManager;
 
-let clickedObject = null;
-let clickTime;
+let controls;
 
 let objects = [];
 
@@ -104,10 +107,6 @@ function init() {
 
         onWindowResize();
         window.addEventListener( 'resize', onWindowResize );
-
-        document.addEventListener( 'pointerdown', onPointerDown );
-        
-        document.addEventListener( 'pointerup', onPointerUp );
     }   
 
     /////////////////////////////////////////////////////////////////////
@@ -128,17 +127,18 @@ function init() {
             scene.add( sphere );
             objects.push( sphere );
         }
-
-        //const controls = new OrbitControls( objects[0], renderer.domElement );
+        
         controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = false;
         controls.enableZoom = false;
-        controls.enableDamping = true;
-        //controls.minZoom = 2;
+
+        //controls.enableDamping = true;
+
+        var multiController = new MultiOrbitController(camera, controls);
+        var raycaster = new CameraRaycaster(camera, objects);
+        interactionManager = new InteractionManager(multiController, raycaster);
     }
 }
-
-
 
 function onWindowResize() {
 
@@ -150,64 +150,35 @@ function onWindowResize() {
 
 }
 
-function onPointerDown( event ) {
-    // screen pos of click
-    pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+// moves a vec3 towards a vec3 at a set speed
+// returns new position
+function moveTowards( to, from, speed, delta ) {
+    // maximum step size
+    var maxDist = speed * delta;
 
-    // raycast from screen
-    raycaster.setFromCamera( pointer, camera );
-    const intersects = raycaster.intersectObjects( objects );
+    // vector between positions
+    var path = to.clone().sub(from);
 
-    // set clicked object if exists
-    if ( intersects.length > 0 ) {
-        clickedObject = intersects[0].object;
-        clickTime = totalTime;
-    }
-}
-
-function onPointerUp( event ) {
-    if (clickedObject == null)
+    // check if distance remaining can be done in one step
+    if (path.lengthSq() <= maxDist*maxDist)
     {
-        return;
+        return to;
     }
 
-    let mouse = new THREE.Vector2();
-    mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-    mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-    let dist = pointer.distanceTo(mouse);
+    // scale remaining distance to allowed step size
+    path.normalize();
+    path.multiplyScalar(maxDist);
 
-    // guess if intentional click
-    if (totalTime-clickTime < 0.1 && dist < 0.05)
-    {
-        // save offset
-        var offsetVector = controls.object.position.sub(controls.target);
-
-        // set new target
-        controls.target = clickedObject.position;
-
-        // reapply offset
-        controls.object.position.copy(controls.target.clone().add(offsetVector));
-
-        // update orbit 
-        controls.update();
-
-        // set color
-        scene.background = new THREE.Color(clickedObject.name);
-        scene.background.convertSRGBToLinear();
-    }
-
-    clickedObject = null;
+    return from.clone().add(path);
 }
 
 function animate() {
     
     stats.begin();
 
+    // game loop
     updateClock();
-
     update();
-
     render();
 
     stats.end();
@@ -216,7 +187,31 @@ function animate() {
 }
 
 function update() {
-    controls.update();
+    interactionManager.update();
+
+    //controls.update();
+
+    //camera.position.copy(moveTowards(cameraTracker.position, camera.position, 1, deltaTime));
+    //var quat1 = cameraTracker.quaternion.clone();
+
+    //b.setFromQuaternion(quat1);
+    
+
+    //var rotateY = new THREE.Quaternion();
+
+    //const a = new THREE.Euler( 0,3.1415,0, 'XYZ' );
+    //rotateY.setFromEuler(a);
+
+    //quat1.premultiply(rotateY);
+
+    //var quat2 = camera.quaternion.clone();
+
+    //b.setFromQuaternion(quat2);
+
+    //camera.lookAt(controls.target);
+    //quat2.rotateTowards( quat1, 7 * deltaTime );
+
+    //camera.setRotationFromQuaternion(quat2);
 }
 
 function render(time) {
