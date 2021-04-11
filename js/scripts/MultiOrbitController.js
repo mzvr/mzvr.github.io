@@ -22,13 +22,13 @@ class MultiOrbitController {
         this.orbitControls = orbitController;
 
         this.needsUpdate = true;
-        this.zoomDistance = 2;
+        this.zoomDistance = 0.5;
     }
 
     setNewTarget( newTarget ) {
         
         // pause orbit controls till camera is updated
-        this.orbitControls.active = false;
+        this.orbitControls.enabled = false;
 
         // save orbit offset
         //const offsetVector = this.orbitControls.object.position.sub(this.orbitControls.target);
@@ -60,37 +60,47 @@ class MultiOrbitController {
     }
 
     updateLookAt() {
+        // from rotation
         var rotation = this.orbitor.quaternion.clone();
 
+        // to rotaion
         this.orbitor.lookAt(this.orbitControls.target);
 
-        const distance = rotation.angleTo(this.orbitor.quaternion);
+        // estimate distance left to cover
+        if (rotation.angleTo(this.orbitor.quaternion) < 0.0005) {
+            return true
+        }
 
+        // partial change
         rotation.rotateTowards(this.orbitor.quaternion, 0.01);
-        
         this.orbitor.setRotationFromQuaternion(rotation);
 
-        return distance-0.0005<0;
+        return false;
     }
 
     updateZoom() {
-        var orbitPos = this.orbitControls.target.clone().sub(this.orbitor.position);
-        orbitPos.normalize();
-        orbitPos.multiplyScalar(-this.zoomDistance);
-        orbitPos.add(this.orbitControls.target);
+        // direction from orbitor to target
+        const path = this.orbitControls.target.clone().sub(this.orbitor.position);
+        const direction = path.clone().normalize();
 
+        // location of orbit
+        const orbitOffset = direction.clone().multiplyScalar(-this.zoomDistance);
+        const orbitPos = orbitOffset.clone().add(this.orbitControls.target);
+
+        // if movement can be done in one step
         if (this.orbitor.position.distanceToSquared(orbitPos) < stepSize*stepSize)
         {
             this.orbitor.position.copy(orbitPos);
             return true;
         }
 
+        // else do part of movement-
         this.moveTowards(this.orbitor.position, orbitPos, stepSize);
 
         return false;
     }
 
-    update() {
+    update(deltaTime) {
         if (this.needsUpdate)
         {
             const finishedTurn = this.updateLookAt();
@@ -100,7 +110,7 @@ class MultiOrbitController {
 
             if (finished) {
                 this.needsUpdate = false;
-                this.orbitControls.active = true;
+                this.orbitControls.enabled = true;
             }
         }
     }
