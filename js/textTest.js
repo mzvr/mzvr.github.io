@@ -3898,8 +3898,17 @@ let camera, scene, renderer, controls, composer;
 let renderScene, gammaPass, SMAApass;
 let mainLight, sun;
 
+let textObject;
+
 const params = {
-  cutoff: 1.0
+    textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui. ',
+    align: 'left',
+    width: 300,
+    letterSpacing: 0,
+    lineHeight: 30,
+    wireframe: false,
+    textMaterial: null,
+    wireMaterial: null,
 }
 
 var textMaterial;
@@ -3982,14 +3991,15 @@ function init() {
         // word wrapped to 300px and right-aligned
         var geometry = createGeometry({
             width: 300,
-            align: 'right',
+            align: params.align,
             font: font
         })
 
         // change text and other options as desired
         // the options sepcified in constructor will
         // be used as defaults
-        geometry.update('Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui. ')
+        geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+        
 
         // the resulting layout has metrics and bounds
         //console.log(geometry.layout.height)
@@ -4001,11 +4011,10 @@ function init() {
         // we can use a simple ThreeJS material
 
         texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        texture.encoding = THREE.LinearEncoding;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearMipmapLinearFilter
 
-        textMaterial = new THREE.RawShaderMaterial(Shader({
+        params.textMaterial = new THREE.RawShaderMaterial(Shader({
             alphaTest: 0.4,
             map: texture,
             side: THREE.DoubleSide,
@@ -4013,17 +4022,46 @@ function init() {
             color: 'rgb(255, 255, 255)'
         }));
 
-        // now do something with our mesh!
-        var mesh = new THREE.Mesh(geometry, textMaterial);
-
-        mesh.scale.set(-.02,-.02,.02);
-        mesh.position.x += 4;
-        mesh.position.y -= 5;
-        mesh.position.z += 5;
-
-        scene.add(mesh);
+        params.wireMaterial = new THREE.MeshBasicMaterial({
+            wireframe: true
         });
-    })
+
+        // now do something with our mesh!
+        textObject = new THREE.Mesh(geometry, params.textMaterial);
+
+        textObject.scale.set(-.01,-.01,.01);
+        textObject.position.x += 1;
+        textObject.position.y -= 5;
+        textObject.position.z += 2;
+
+        scene.add(textObject);
+        });
+    });
+
+    gui.add(params, 'textField').onFinishChange(function (value) {
+        textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+    });
+
+    gui.add(params, 'width').onFinishChange(function (value) {
+        textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+    });
+
+    gui.add(params, 'lineHeight').onFinishChange(function (value) {
+        textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+    });
+
+    gui.add(params, 'letterSpacing').onFinishChange(function (value) {
+        textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+    });
+
+    gui.add(params, 'align', { Left: 'left', Right: 'right', Center: 'center' } ).onChange(function (value) {
+        textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+    });
+
+    gui.add(params, 'wireframe').onChange(function (value) {
+        if (params.wireframe) textObject.material = params.wireMaterial;
+        else textObject.material = params.textMaterial;
+    });
 
     onWindowResize();
     window.addEventListener( 'resize', onWindowResize );
@@ -4052,6 +4090,7 @@ function animate(time) {
 }
 
 function render(time) {
+    //renderer.render(scene, camera);
     composer.render();
 }
 
