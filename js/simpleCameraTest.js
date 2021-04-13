@@ -141,8 +141,6 @@ function init() {
 
 
 function onWindowResize() {
-    console.log('width: ' + window.innerWidth + ' height: ' + window.innerHeight);
-    console.log('width: ' + window.innerWidth * window.devicePixelRatio + ' height: ' + window.innerHeight * window.devicePixelRatio);
 
     var newWidth = window.innerWidth * window.devicePixelRatio;
     var newHeight = window.innerHeight * window.devicePixelRatio
