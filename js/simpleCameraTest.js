@@ -141,12 +141,17 @@ function init() {
 
 
 function onWindowResize() {
+    console.log('width: ' + window.innerWidth + ' height: ' + window.innerHeight);
+    console.log('width: ' + window.innerWidth * window.devicePixelRatio + ' height: ' + window.innerHeight * window.devicePixelRatio);
+
+    var newWidth = window.innerWidth * window.devicePixelRatio;
+    var newHeight = window.innerHeight * window.devicePixelRatio
 
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    composer.setSize( window.innerWidth, window.innerHeight );
+    renderer.setSize( newWidth, newHeight, false );
+    composer.setSize( newWidth, newHeight );
 
 }
 
@@ -220,5 +225,6 @@ function update() {
 }
 
 function render(time) {
-    composer.render();
+    renderer.render(scene, camera);
+    //composer.render();
 }

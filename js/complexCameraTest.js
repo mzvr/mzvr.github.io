@@ -24,6 +24,10 @@ var interactionManager;
 
 let objects = [];
 
+var params = {
+    renderQuality: 1
+} 
+
 init();
 animate();
 
@@ -103,6 +107,10 @@ function init() {
 
         onWindowResize();
         window.addEventListener( 'resize', onWindowResize );
+
+        gui.add(params, 'renderQuality', { '100%': 1, '75%': 0.75, '50%': 0.5 } ).onChange(function (value) {
+            onWindowResize();
+        });
     }   
 
     /////////////////////////////////////////////////////////////////////
@@ -140,11 +148,14 @@ function init() {
 
 function onWindowResize() {
 
+    var newWidth = window.innerWidth * window.devicePixelRatio * params.renderQuality;
+    var newHeight = window.innerHeight * window.devicePixelRatio * params.renderQuality;
+  
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    composer.setSize( window.innerWidth, window.innerHeight );
+  
+    renderer.setSize( newWidth, newHeight, false );
+    composer.setSize( newWidth, newHeight );
 
 }
 

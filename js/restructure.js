@@ -25,6 +25,7 @@ let renderScene, bloomPass, ACESPass, gammaPass, SMAApass;
 let mainLight, sun;
 
 const params = {
+    renderQuality: 1,
     brightness: 5,
     bloomStrength: 0.26,
     bloomThreshold: 0.04,
@@ -220,6 +221,12 @@ function init() {
         );
     }
 
+    onWindowResize();
+    window.addEventListener( 'resize', onWindowResize );
+
+    gui.add(params, 'renderQuality', { '100%': 1, '75%': 0.75, '50%': 0.5 } ).onChange(function (value) {
+        onWindowResize();
+    });
     gui.add( params, 'brightness', 0.1, 10 ).onChange( function ( value ) {
         mainLight.intensity = value;
     } );
@@ -245,27 +252,25 @@ function init() {
     } );
 }
 
-function resizeRendererToDisplaySize(renderer)
-    {
-        //const canvas = renderer.domElement;
-        const width = canvas.clientWidth;
-        const height = canvas.clientHeight;
-        const needResize = canvas.width !== width || canvas.height !== height;
-        if (needResize) {
-            renderer.setSize(width, height, false);
-            composer.setSize(width, height);
-            camera.aspect = width / height;
-            camera.updateProjectionMatrix();
-        }
-        return needResize;
-    }
+function onWindowResize() {
+
+    var newWidth = window.innerWidth * window.devicePixelRatio * params.renderQuality;
+    var newHeight = window.innerHeight * window.devicePixelRatio * params.renderQuality;
+  
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+  
+    renderer.setSize( newWidth, newHeight, false );
+    composer.setSize( newWidth, newHeight );
+  
+  }
 
 function animate(time) {
     
     
     stats.begin();
 
-    resizeRendererToDisplaySize(renderer);
+    //resizeRendererToDisplaySize(renderer);
 
     render(time);
 

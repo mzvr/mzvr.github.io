@@ -3901,14 +3901,15 @@ let mainLight, sun;
 let textObject;
 
 const params = {
-    textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui. ',
-    align: 'left',
-    width: 300,
-    letterSpacing: 0,
-    lineHeight: 30,
-    wireframe: false,
-    textMaterial: null,
-    wireMaterial: null,
+  renderQuality: 1,
+  textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui. ',
+  align: 'left',
+  width: 300,
+  letterSpacing: 0,
+  lineHeight: 30,
+  wireframe: false,
+  textMaterial: null,
+  wireMaterial: null,
 }
 
 var textMaterial;
@@ -4038,27 +4039,33 @@ function init() {
         });
     });
 
-    gui.add(params, 'textField').onFinishChange(function (value) {
+    var textOptions = gui.addFolder('Text Options');
+
+    gui.add(params, 'renderQuality', { '100%': 1, '75%': 0.75, '50%': 0.5 } ).onChange(function (value) {
+      onWindowResize();
+    });
+
+    textOptions.add(params, 'textField').onFinishChange(function (value) {
         textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
     });
 
-    gui.add(params, 'width').onFinishChange(function (value) {
+    textOptions.add(params, 'width').onFinishChange(function (value) {
         textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
     });
 
-    gui.add(params, 'lineHeight').onFinishChange(function (value) {
+    textOptions.add(params, 'lineHeight').onFinishChange(function (value) {
         textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
     });
 
-    gui.add(params, 'letterSpacing').onFinishChange(function (value) {
+    textOptions.add(params, 'letterSpacing').onFinishChange(function (value) {
         textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
     });
 
-    gui.add(params, 'align', { Left: 'left', Right: 'right', Center: 'center' } ).onChange(function (value) {
+    textOptions.add(params, 'align', { Left: 'left', Right: 'right', Center: 'center' } ).onChange(function (value) {
         textObject.geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
     });
 
-    gui.add(params, 'wireframe').onChange(function (value) {
+    textOptions.add(params, 'wireframe').onChange(function (value) {
         if (params.wireframe) textObject.material = params.wireMaterial;
         else textObject.material = params.textMaterial;
     });
@@ -4069,11 +4076,14 @@ function init() {
 
 function onWindowResize() {
 
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
+  var newWidth = window.innerWidth * window.devicePixelRatio * params.renderQuality;
+  var newHeight = window.innerHeight * window.devicePixelRatio * params.renderQuality;
 
-    renderer.setSize( window.innerWidth, window.innerHeight );
-    composer.setSize( window.innerWidth, window.innerHeight );
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( newWidth, newHeight, false );
+  composer.setSize( newWidth, newHeight );
 
 }
 
