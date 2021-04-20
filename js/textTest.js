@@ -1,5 +1,6 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
+import { SceneUtils } from 'https://unpkg.com/three@0.126.1/examples/jsm/utils/SceneUtils.js';
 import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.module.js';
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
 
@@ -16,7 +17,7 @@ let camera, scene, renderer, controls, composer;
 let renderScene, gammaPass, SMAApass;
 let mainLight, sun;
 
-let textObject;
+let textObject = new THREE.Object3D;
 
 const params = {
   renderQuality: 1,
@@ -29,8 +30,6 @@ const params = {
   textMaterial: null,
   wireMaterial: null,
 }
-
-var textMaterial;
 
 init();
 animate();
@@ -105,6 +104,18 @@ function init() {
             });
     }
 
+    {
+        const geometry = new THREE.SphereGeometry(.1,32,32);
+        const material = new THREE.MeshBasicMaterial(0xffffff);
+        sun = new THREE.Mesh( geometry, material );
+        sun.position.x = 10;
+        scene.add( sun );
+    }
+
+    params.wireMaterial = new THREE.MeshBasicMaterial({
+        wireframe: true
+    });
+
     loadFont('../assets/fonts/Arial.fnt', function(err, font) {
         // create a geometry of packed bitmap glyphs, 
         // word wrapped to 300px and right-aligned
@@ -118,6 +129,11 @@ function init() {
         // the options sepcified in constructor will
         // be used as defaults
         geometry.update({ text: params.textField, align: params.align, width: params.width, letterSpacing: params.letterSpacing, lineHeight: params.lineHeight });
+        
+        var center = new THREE.Vector3();
+        geometry.computeBoundingBox();
+        geometry.boundingBox.getCenter(center);
+        center.multiplyScalar(0.01);
         
 
         // the resulting layout has metrics and bounds
@@ -141,19 +157,33 @@ function init() {
             color: 'rgb(255, 255, 255)'
         }));
 
-        params.wireMaterial = new THREE.MeshBasicMaterial({
-            wireframe: true
-        });
 
         // now do something with our mesh!
         textObject = new THREE.Mesh(geometry, params.textMaterial);
+        textObject.scale.set(-0.01,-0.01,0.01);
+        //textObject.position.sub(center);
 
-        textObject.scale.set(-.01,-.01,.01);
-        textObject.position.x += 1;
-        textObject.position.y -= 5;
-        textObject.position.z += 2;
+        
+        //textObject.position.x += 1;
+        //textObject.position.y -= 5;
+        //textObject.position.z += 2;
+
+        const box = new THREE.BoxHelper( textObject, 0xffff00 );
+        textObject.attach( box );
+        textObject.translateX(center.x);
+        textObject.translateY(center.y);
+        textObject.translateZ(center.z);
+
+        //const axesHelper = new THREE.AxesHelper( 5 );
+        //axesHelper.position.copy(textObject.position);
+        //textObject.attach(axesHelper);
 
         scene.add(textObject);
+        //sun.attach(textObject);
+
+        
+        
+        sun.rotateY(0.4);
         });
     });
 
@@ -194,26 +224,31 @@ function init() {
 
 function onWindowResize() {
 
-  var newWidth = window.innerWidth * window.devicePixelRatio * params.renderQuality;
-  var newHeight = window.innerHeight * window.devicePixelRatio * params.renderQuality;
+    var newWidth = window.innerWidth * window.devicePixelRatio * params.renderQuality;
+    var newHeight = window.innerHeight * window.devicePixelRatio * params.renderQuality;
 
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-  renderer.setSize( newWidth, newHeight, false );
-  composer.setSize( newWidth, newHeight );
+    renderer.setSize( newWidth, newHeight, false );
+    composer.setSize( newWidth, newHeight );
 
 }
 
 function animate(time) {
     
-  stats.begin();
+    stats.begin();
 
-  render(time);
+    //console.log(time*0.0003);
+    //sun.position.x = time*0.0003;
 
-  stats.end();
+    //textObject.setRotationFromQuaternion(camera.quaternion);
 
-  requestAnimationFrame( animate );
+    render(time);
+
+    stats.end();
+
+    requestAnimationFrame( animate );
 
 }
 

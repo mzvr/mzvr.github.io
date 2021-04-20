@@ -13,6 +13,7 @@ import Stats from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/stats.modul
 import { MultiOrbitController } from './scripts/MultiOrbitController.js';
 import { CameraRaycaster } from './scripts/CameraRaycaster.js';
 import { InteractionManager } from './scripts/InteractionManager.js';
+import { OrbitGui } from './scripts/OrbitGui.js';
 
 let canvas, stats, gui;
 let clock, deltaTime, totalTime; 
@@ -25,7 +26,7 @@ var interactionManager;
 let objects = [];
 
 var params = {
-    renderQuality: 1
+    renderQuality: 1,
 } 
 
 init();
@@ -140,9 +141,10 @@ function init() {
 
         controls.enableDamping = true;
 
+        var orbitGui = new OrbitGui(scene, renderer);
         var multiController = new MultiOrbitController(camera, controls);
         var raycaster = new CameraRaycaster(camera, objects);
-        interactionManager = new InteractionManager(multiController, raycaster);
+        interactionManager = new InteractionManager(multiController, raycaster, orbitGui);
     }
 }
 

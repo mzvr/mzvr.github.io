@@ -1,12 +1,11 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
-import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
-
 
 class InteractionManager {
-    constructor( MultiOrbitController, CameraRaycaster ) {
+    constructor( refMultiOrbitController, refCameraRaycaster, refOrbitGui ) {
 
-        this.multiOrbitController = MultiOrbitController;
-        this.cameraRaycaster = CameraRaycaster;
+        this.multiOrbitController = refMultiOrbitController;
+        this.cameraRaycaster = refCameraRaycaster;
+        this.orbitGui = refOrbitGui;
 
         this.clickPos = new THREE.Vector2();
 
@@ -31,26 +30,24 @@ class InteractionManager {
         releasePos.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
         let dist = releasePos.distanceTo(this.clickPos);
     
-        // guess if intentional click
+        // guess if intentional click (small distance between click and release)
         if ( dist < 0.05 )
         {
             const intersects = this.cameraRaycaster.doRaycast( releasePos );
 
-            if ( intersects.length > 0 ) {
+            // end early if possible
+            if ( intersects.length == 0 ) return
 
-                const clickedObject = intersects[0].object;
-            
-                this.multiOrbitController.setNewTarget(clickedObject.position);
+            const clickedObject = intersects[0].object;
         
-                // set color
-                //scene.background = new THREE.Color(clickedObject.name);
-                //scene.background.convertSRGBToLinear();
-            }
+            this.multiOrbitController.setNewTarget(clickedObject.position);
+            this.orbitGui.setPivot(clickedObject.position)
         }
     }
 
     update(deltaTime) {
         this.multiOrbitController.update(deltaTime);
+        this.orbitGui.setRotation(this.multiOrbitController.orbitor.rotation);
     }
 }
 
