@@ -146,7 +146,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const crestmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const crestmat = new THREE.MeshPhysicalMaterial({ map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = crestmat;
 
@@ -208,7 +208,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const torchmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const torchmat = new THREE.MeshPhysicalMaterial({ map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = torchmat;
 
