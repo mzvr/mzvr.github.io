@@ -2,6 +2,7 @@ import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/RGBELoader.js';
+import { HDRCubeTextureLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/HDRCubeTextureLoader.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -22,6 +23,9 @@ let clock, deltaTime, totalTime;
 let camera, scene, renderer, composer;
 let renderScene, gammaPass, SMAApass;
 let mainLight;
+
+let hdrCubeMap;
+let hdrCubeRenderTarget;
 
 var interactionManager;
 
@@ -121,7 +125,94 @@ function init() {
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         pmremGenerator.compileEquirectangularShader();
 
-        const hdrEquirect = new RGBELoader()
+        const hdrUrls = [ 'px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr' ];
+        hdrCubeMap = new HDRCubeTextureLoader()
+        .setPath( './assets/textures/environment/pisa/' )
+        .setDataType( THREE.UnsignedByteType )
+        .load( hdrUrls, function () {
+
+                hdrCubeRenderTarget = pmremGenerator.fromCubemap( hdrCubeMap );
+
+                hdrCubeMap.magFilter = THREE.LinearFilter;
+                hdrCubeMap.needsUpdate = true;
+
+                loader.load(
+                    './assets/models/crest/Crest.glb',
+                    // called when the resource is loaded
+                    function ( gltf ) {
+    
+                        const albedo = new THREE.TextureLoader().load( './assets/models/crest/CrestAlbedo.png');
+                        albedo.encoding = THREE.sRGBEncoding;
+                        const rough = new THREE.TextureLoader().load( './assets/models/crest/CrestRoughness.png');
+                        rough.encoding = THREE.LinearEncoding;
+                        const metal = new THREE.TextureLoader().load( './assets/models/crest/CrestMetallic.png');
+                        metal.encoding = THREE.LinearEncoding;
+    
+                        albedo.flipY = false;
+                        rough.flipY = false;
+                        metal.flipY = false;
+    
+                        const crestmat = new THREE.MeshStandardMaterial({roughness: 0, envMap: hdrCubeRenderTarget.texture});
+    
+                        gltf.scene.children[0].material = crestmat;
+    
+                        gltf.scene.children[0].position.x += 20;
+                        
+                        objects.push(gltf.scene.children[0]);
+                        scene.add(gltf.scene.children[0]);
+    
+                    },
+                    // called while loading is progressing
+                    function ( xhr ) {
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    },
+                    // called when loading has errors
+                    function ( error ) {
+                        console.log( 'An error happened' );
+                    }
+                );
+    
+                //crest
+                loader.load(
+                    './assets/models/torch/TorchHP.glb',
+                    // called when the resource is loaded
+                    function ( gltf ) {
+    
+                        const albedo = new THREE.TextureLoader().load( './assets/models/torch/TorchAlbedo.png');
+                        albedo.encoding = THREE.sRGBEncoding;
+                        const rough = new THREE.TextureLoader().load( './assets/models/torch/TorchRoughness.png');
+                        rough.encoding = THREE.LinearEncoding;
+                        const metal = new THREE.TextureLoader().load( './assets/models/torch/TorchMetal.png');
+                        metal.encoding = THREE.LinearEncoding;
+    
+                        albedo.flipY = false;
+                        rough.flipY = false;
+                        metal.flipY = false;
+    
+                        const torchmat = new THREE.MeshStandardMaterial({envMap: hdrCubeRenderTarget.texture});
+    
+                        gltf.scene.children[0].material = torchmat;
+    
+                        gltf.scene.children[0].position.x += 30;
+    
+                        gltf.scene.children[0].scale.set(0.1,0.1,0.1);
+                        
+                        objects.push(gltf.scene.children[0]);
+                        scene.add(gltf.scene.children[0]);
+    
+                    },
+                    // called while loading is progressing
+                    function ( xhr ) {
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    },
+                    // called when loading has errors
+                    function ( error ) {
+                        console.log( 'An error happened' );
+                    }
+                );
+        } );
+
+        /*const hdrEquirect = new RGBELoader()
         .setDataType( THREE.UnsignedByteType )
         .load( './assets/textures/environment/beachLQ.hdr', function () {
 
@@ -230,7 +321,7 @@ function init() {
                 }
             );
 
-        } );
+        } );*/
 
         //shuttle
         {
