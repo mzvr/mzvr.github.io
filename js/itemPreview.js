@@ -125,7 +125,7 @@ function init() {
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         pmremGenerator.compileEquirectangularShader();
 
-        const hdrUrls = [ 'px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr' ];
+        /*const hdrUrls = [ 'px.hdr', 'nx.hdr', 'py.hdr', 'ny.hdr', 'pz.hdr', 'nz.hdr' ];
         hdrCubeMap = new HDRCubeTextureLoader()
         .setPath( './assets/textures/environment/pisa/' )
         .setDataType( THREE.UnsignedByteType )
@@ -153,7 +153,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const crestmat = new THREE.MeshStandardMaterial({ envMap: hdrCubeRenderTarget.texture, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const crestmat = new THREE.MeshPhyiscalMaterial({ envMap: hdrCubeRenderTarget.texture, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = crestmat;
 
@@ -162,31 +162,6 @@ function init() {
                     objects.push(gltf.scene.children[0]);
                     scene.add(gltf.scene.children[0]);
 
-                },
-                // called while loading is progressing
-                function ( xhr ) {
-                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                },
-                // called when loading has errors
-                function ( error ) {
-                    console.log( 'An error happened' );
-                }
-            );
-
-            // crest glass
-            loader.load(
-                './assets/models/crest/CrestGlass.glb',
-                // called when the resource is loaded
-                function ( gltf ) {
-
-                    var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrCubeRenderTarget.texture, metalness: 0, roughness: 0, transmission: 1, transparent: true});
-
-                    gltf.scene.children[0].material = glassmat;
-
-                    gltf.scene.children[0].position.x += 20;
-                    
-                    objects.push(gltf.scene.children[0]);
-                    scene.add(gltf.scene.children[0]);
                 },
                 // called while loading is progressing
                 function ( xhr ) {
@@ -236,9 +211,9 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
-        } );
+        } );*/
 
-        /*const hdrEquirect = new RGBELoader()
+        const hdrEquirect = new RGBELoader()
         .setDataType( THREE.UnsignedByteType )
         .load( './assets/textures/environment/beachLQ.hdr', function () {
 
@@ -263,7 +238,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const crestmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const crestmat = new THREE.MeshStandardMaterial({ envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = crestmat;
 
@@ -282,7 +257,7 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
-
+/*
             // crest glass
             loader.load(
                 './assets/models/crest/CrestGlass.glb',
@@ -306,7 +281,7 @@ function init() {
                 function ( error ) {
                     console.log( 'An error happened' );
                 }
-            );
+            );*/
 
             //crest
             loader.load(
@@ -325,7 +300,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const torchmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const torchmat = new THREE.MeshStandardMaterial({ envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = torchmat;
 
@@ -347,7 +322,7 @@ function init() {
                 }
             );
 
-        } );*/
+        } );
 
         //shuttle
         {
