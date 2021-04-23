@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Item Previewer</title>
+    <link rel="shortcut icon" href="favicon.png" type="image/x-icon">  
+    <script type="module" src="./js/itemPreview.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        #align-bottomright {
+            position: absolute;
+            bottom: 1em;
+            right: 1em;
+            fill: red;
+            z-index: 99;
+            pointer-events: none;
+        }
+        #UofA {
+            width: 10vmax;
+            height: 7.4vmax;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
+    <div id="align-bottomright"><img id="UofA" src="assets/textures/UofAlogo.png"></div>
+</body>
+</html>

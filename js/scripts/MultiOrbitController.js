@@ -5,7 +5,7 @@ const LengthTime = 0.7;
 
 class MultiOrbitController {
 
-    constructor( object, orbitController ) {
+    constructor( object, orbitController, zoom=0.5 ) {
 
         // setup 
         if (object == null)
@@ -24,7 +24,7 @@ class MultiOrbitController {
         // variables
         this.tempObject = new Object3D();
         this.needsUpdate = false;
-        this.zoomDistance = 0.5;
+        this.zoomDistance = zoom;
     }
 
     setNewTarget( newTarget ) {
@@ -32,7 +32,7 @@ class MultiOrbitController {
         if (newTarget == this.orbitControls.target) return;
 
         // set new target
-        this.orbitControls.target = newTarget;
+        this.orbitControls.target = newTarget.clone();
         
         // orbit temporary object and track camera to that
         this.tempObject.position.copy(this.orbitor.position);
@@ -73,15 +73,15 @@ class MultiOrbitController {
 
             // set location of orbit
             const orbitOffset = direction.clone().multiplyScalar(length);
-            const orbitPos = orbitOffset.clone().add(this.orbitControls.target);
+            const orbitPos = orbitOffset.add(this.orbitControls.target);
             this.orbitor.position.copy(orbitPos);
 
             // inverted position of lookat object
-            // for some reason its auto-backwards
+            // for some reason its set backwards
             var invObj = this.tempObject.position.clone().sub(this.orbitControls.target).add(this.tempObject.position);
             this.tempObject.lookAt(invObj);
 
-            // convert smooth lerp to inverse power
+            // convert linear range to inverse power
             const invAlpha = 1 - alpha;
 
             // set rotation

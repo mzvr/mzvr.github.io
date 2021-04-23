@@ -3438,10 +3438,10 @@ module.exports = function createSDFShader (opt) {
       '  vec4 texColor = texture2D(map, vUv);',
       alphaTest === 0
         ? ''
-        : '  if (texColor.a < ' + alphaTest + ') discard;',
+        : '  if (texColor.a+1.0 < ' + alphaTest + ') discard;',
       //'  float alpha = aastep(texColor.a);',
       //'  gl_FragColor = vec4(texColor.xyz, 1.0);',
-      '  float alpha2 = smoothstep(' + alphaTest + ', ' + (alphaTest+0.05) + ', texColor.a);',
+      '  float alpha2 = smoothstep(' + (alphaTest) + ', ' + (alphaTest+0.01) + ', texColor.a);',
       '  alpha2 = clamp(alpha2, 0.0, 1.0);',
       //'  gl_FragColor = vec4(color,alpha2);',
       '  gl_FragColor = vec4(vec3(1.0), alpha2);',

@@ -41,13 +41,16 @@ class InteractionManager {
             const clickedObject = intersects[0].object;
         
             this.multiOrbitController.setNewTarget(clickedObject.position);
-            this.orbitGui.setPivot(clickedObject.position)
+            //this.orbitGui.setPivot(clickedObject.position);
         }
     }
 
     update(deltaTime) {
         this.multiOrbitController.update(deltaTime);
-        this.orbitGui.setRotation(this.multiOrbitController.orbitor.rotation);
+        if (this.orbitGui != null) {
+            this.orbitGui.update();
+        }
+        //this.orbitGui.setRotation(this.multiOrbitController.orbitor.rotation);
     }
 }
 

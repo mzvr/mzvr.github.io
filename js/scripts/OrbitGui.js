@@ -1,21 +1,31 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { createGeometry, loadFont, Shader } from './bmfont-text.js';
 
+const maxAngle = 25 * Math.PI / 180;
+
 class OrbitGui {
-    constructor(scene, renderer) {
+    constructor(camera, renderer) {
         this.pivotObject = new THREE.Object3D();
 
         this.textParams = {
-            textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui. ',
+            textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui.',
             align: 'left',
             width: 300,
             letterSpacing: 0,
             lineHeight: 30
         }
+
+        this.camera = camera;
+
+        this.camera.add(this.pivotObject);
+
+        this.textObject = new THREE.Object3D();
+
+        
+        this.savedRotation = new THREE.Quaternion();
+        //this.savedRotation.copy(this.camera.rotation);
         
         this.createText(renderer);
-
-        scene.add(this.pivotObject);
     }
 
     createText(renderer) {
@@ -39,6 +49,7 @@ class OrbitGui {
                 width: thisObj.textParams.width,
                 letterSpacing: thisObj.textParams.letterSpacing, 
                 lineHeight: thisObj.textParams.lineHeight });
+
             
             // the texture atlas containing our glyphs
             var textureLoader = new THREE.TextureLoader();
@@ -49,7 +60,7 @@ class OrbitGui {
                 texture.minFilter = THREE.LinearMipmapLinearFilter
         
                 var textMaterial = new THREE.RawShaderMaterial(Shader({
-                    alphaTest: 0.43,
+                    alphaTest: 0.46,
                     color: 'rgb(255, 255, 255)',
                     depthTest: false,
                     map: texture,
@@ -65,13 +76,14 @@ class OrbitGui {
                 var center = new THREE.Vector3();
                 geometry.computeBoundingBox();
                 geometry.boundingBox.getCenter(center);
+
                 center.multiplyScalar(textScalar);
 
                 thisObj.textObject.translateX(-center.x);
                 thisObj.textObject.translateY(center.y);
-                thisObj.textObject.translateZ(center.z);
-                
-                thisObj.pivotObject.add(thisObj.textObject);
+
+                thisObj.pivotObject.position.z = -1;
+                thisObj.pivotObject.add(thisObj.textObject)
             });
         });
     }
@@ -85,14 +97,37 @@ class OrbitGui {
             lineHeight: this.textParams.lineHeight });
     }
 
+    update() {
+        var frameRotation = this.savedRotation.multiply(this.camera.quaternion.clone().invert());
+
+        frameRotation.x *= 1;
+        frameRotation.y *= 1;
+        frameRotation.z *= 1;
+        frameRotation.w *= 1;
+        
+        const target = new THREE.Quaternion(0,0,0,1);
+
+        var currentAngle = this.pivotObject.quaternion.angleTo(target);
+
+        this.pivotObject.quaternion.multiply(frameRotation);
+
+        var angle = this.pivotObject.quaternion.angleTo(target);
+
+        if ( angle > maxAngle )
+        {
+            this.pivotObject.quaternion.copy(target.rotateTowards(this.pivotObject.quaternion, maxAngle));
+        }
+        
+        this.savedRotation.copy(this.camera.quaternion);
+    }
+
     setPivot(newPos) {
-        this.pivotObject.position.copy(newPos);
+        //this.pivotObject.position.copy(newPos);
     }
 
     setRotation(euler) {
-        this.pivotObject.setRotationFromEuler(euler);
+        //this.pivotObject.setRotationFromEuler(euler);
     }
-
 }
 
 export { OrbitGui };

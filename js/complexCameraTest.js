@@ -82,6 +82,7 @@ function init() {
         camera.position.z = 2;
         camera.position.x = 0;
         camera.position.y = 0;
+        scene.add(camera);
 
         // sun setep
         mainLight = new THREE.DirectionalLight(0xFFFFFF, 1);
@@ -141,7 +142,7 @@ function init() {
 
         controls.enableDamping = true;
 
-        var orbitGui = new OrbitGui(scene, renderer);
+        var orbitGui = new OrbitGui(camera, renderer, scene);
         var multiController = new MultiOrbitController(camera, controls);
         var raycaster = new CameraRaycaster(camera, objects);
         interactionManager = new InteractionManager(multiController, raycaster, orbitGui);
