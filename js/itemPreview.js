@@ -136,80 +136,81 @@ function init() {
                 hdrCubeMap.magFilter = THREE.LinearFilter;
                 hdrCubeMap.needsUpdate = true;
 
-                loader.load(
-                    './assets/models/crest/Crest.glb',
-                    // called when the resource is loaded
-                    function ( gltf ) {
-    
-                        const albedo = new THREE.TextureLoader().load( './assets/models/crest/CrestAlbedo.png');
-                        albedo.encoding = THREE.sRGBEncoding;
-                        const rough = new THREE.TextureLoader().load( './assets/models/crest/CrestRoughness.png');
-                        rough.encoding = THREE.LinearEncoding;
-                        const metal = new THREE.TextureLoader().load( './assets/models/crest/CrestMetallic.png');
-                        metal.encoding = THREE.LinearEncoding;
-    
-                        albedo.flipY = false;
-                        rough.flipY = false;
-                        metal.flipY = false;
-    
-                        const crestmat = new THREE.MeshStandardMaterial({roughness: 0, envMap: hdrCubeRenderTarget.texture});
-    
-                        gltf.scene.children[0].material = crestmat;
-    
-                        gltf.scene.children[0].position.x += 20;
-                        
-                        objects.push(gltf.scene.children[0]);
-                        scene.add(gltf.scene.children[0]);
-    
-                    },
-                    // called while loading is progressing
-                    function ( xhr ) {
-                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                    },
-                    // called when loading has errors
-                    function ( error ) {
-                        console.log( 'An error happened' );
-                    }
-                );
-    
                 //crest
-                loader.load(
-                    './assets/models/torch/TorchHP.glb',
-                    // called when the resource is loaded
-                    function ( gltf ) {
-    
-                        const albedo = new THREE.TextureLoader().load( './assets/models/torch/TorchAlbedo.png');
-                        albedo.encoding = THREE.sRGBEncoding;
-                        const rough = new THREE.TextureLoader().load( './assets/models/torch/TorchRoughness.png');
-                        rough.encoding = THREE.LinearEncoding;
-                        const metal = new THREE.TextureLoader().load( './assets/models/torch/TorchMetal.png');
-                        metal.encoding = THREE.LinearEncoding;
-    
-                        albedo.flipY = false;
-                        rough.flipY = false;
-                        metal.flipY = false;
-    
-                        const torchmat = new THREE.MeshStandardMaterial({envMap: hdrCubeRenderTarget.texture});
-    
-                        gltf.scene.children[0].material = torchmat;
-    
-                        gltf.scene.children[0].position.x += 30;
-    
-                        gltf.scene.children[0].scale.set(0.1,0.1,0.1);
-                        
-                        objects.push(gltf.scene.children[0]);
-                        scene.add(gltf.scene.children[0]);
-    
-                    },
-                    // called while loading is progressing
-                    function ( xhr ) {
-                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                    },
-                    // called when loading has errors
-                    function ( error ) {
-                        console.log( 'An error happened' );
-                    }
-                );
+            loader.load(
+                './assets/models/crest/Crest.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/crest/CrestAlbedo.png');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    const rough = new THREE.TextureLoader().load( './assets/models/crest/CrestRoughness.png');
+                    rough.encoding = THREE.LinearEncoding;
+                    const metal = new THREE.TextureLoader().load( './assets/models/crest/CrestMetallic.png');
+                    metal.encoding = THREE.LinearEncoding;
+
+                    albedo.flipY = false;
+                    rough.flipY = false;
+                    metal.flipY = false;
+
+                    const crestmat = new THREE.MeshStandardMaterial({ envMap: hdrCubeRenderTarget.texture, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+
+                    gltf.scene.children[0].material = crestmat;
+
+                    gltf.scene.children[0].position.x += 20;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            //crest
+            loader.load(
+                './assets/models/torch/TorchHP.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/torch/TorchAlbedo.png');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    const rough = new THREE.TextureLoader().load( './assets/models/torch/TorchRoughness.png');
+                    rough.encoding = THREE.LinearEncoding;
+                    const metal = new THREE.TextureLoader().load( './assets/models/torch/TorchMetal.png');
+                    metal.encoding = THREE.LinearEncoding;
+
+                    albedo.flipY = false;
+                    rough.flipY = false;
+                    metal.flipY = false;
+
+                    const torchmat = new THREE.MeshStandardMaterial({ envMap: hdrCubeRenderTarget.texture, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+
+                    gltf.scene.children[0].material = torchmat;
+
+                    gltf.scene.children[0].position.x += 30;
+
+                    gltf.scene.children[0].scale.set(0.1,0.1,0.1);
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
         } );
 
         /*const hdrEquirect = new RGBELoader()
