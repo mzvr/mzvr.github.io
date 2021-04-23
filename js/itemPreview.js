@@ -123,7 +123,7 @@ function init() {
 
         const hdrEquirect = new RGBELoader()
         .setDataType( THREE.UnsignedByteType )
-        .load( './assets/textures/environment/beach.hdr', function () {
+        .load( './assets/textures/environment/beachLQ.hdr', function () {
 
             const hdrBackground = pmremGenerator.fromEquirectangular( hdrEquirect ).texture;
             hdrEquirect.dispose();
@@ -146,7 +146,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const crestmat = new THREE.MeshPhysicalMaterial({ map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const crestmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = crestmat;
 
@@ -165,7 +165,7 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
-/*
+
             // crest glass
             loader.load(
                 './assets/models/crest/CrestGlass.glb',
@@ -189,7 +189,7 @@ function init() {
                 function ( error ) {
                     console.log( 'An error happened' );
                 }
-            );*/
+            );
 
             //crest
             loader.load(
@@ -208,7 +208,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const torchmat = new THREE.MeshPhysicalMaterial({ map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const torchmat = new THREE.MeshPhysicalMaterial({ envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = torchmat;
 
