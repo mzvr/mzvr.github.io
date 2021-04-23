@@ -165,7 +165,7 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
-
+/*
             // crest glass
             loader.load(
                 './assets/models/crest/CrestGlass.glb',
@@ -189,7 +189,7 @@ function init() {
                 function ( error ) {
                     console.log( 'An error happened' );
                 }
-            );
+            );*/
 
             //crest
             loader.load(
