@@ -173,7 +173,32 @@ function init() {
                 }
             );
 
-            //crest
+            // crest glass
+            loader.load(
+                './assets/models/crest/CrestGlass.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrCubeRenderTarget.texture, metalness: 0, roughness: 0, transmission: 1, transparent: true});
+
+                    gltf.scene.children[0].material = glassmat;
+
+                    gltf.scene.children[0].position.x += 20;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            //torch
             loader.load(
                 './assets/models/torch/TorchHP.glb',
                 // called when the resource is loaded
