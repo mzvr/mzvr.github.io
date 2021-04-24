@@ -28,8 +28,7 @@ class MultiOrbitController {
     }
 
     setNewTarget( newTarget ) {
-
-        if (newTarget == this.orbitControls.target) return;
+        if (newTarget.equals( this.orbitControls.target ) ) return;
 
         // set new target
         this.orbitControls.target = newTarget.clone();

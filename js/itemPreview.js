@@ -1,8 +1,7 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
-import { RGBELoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/RGBELoader.js';
-import { HDRCubeTextureLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/HDRCubeTextureLoader.js';
+import { RGBELoader } from './ThreeJS/RGBELoader.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -33,6 +32,81 @@ let objects = [];
 
 var params = {
 } 
+
+const _VS = `
+varying vec3 rayDir;
+varying vec3 worldNorm;
+varying float R;
+
+void main() {
+    vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    worldNorm = (mat3(modelMatrix) * normal);
+
+    rayDir = worldPos-cameraPosition;
+
+    vec3 I = normalize(worldPos - cameraPosition);
+    R = 1.0 + dot(I, worldNorm);
+    R = max(R * R, 0.1);
+
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+}
+`;
+
+const _FS = `
+varying vec3 rayDir;
+varying vec3 worldNorm;
+varying float R;
+
+uniform sampler2D hdr;
+
+const vec2 invAtan = vec2(0.1591, 0.3183);
+vec2 SampleSphericalMap(vec3 direction) {
+    vec2 uv = vec2(atan(direction.z, direction.x), asin(direction.y));
+    uv *= invAtan;
+    uv += 0.5;
+    return uv;
+}
+
+vec3 decodeRGBE( vec4 hdr ) {
+    return hdr.rgb * exp2( (hdr.a*255.0)-128.0 );
+    // return hdr.rgb * pow( 2.0, (hdr.a*255.0)-128.0 );
+}
+
+float RGBtoLum( vec3 col ) {
+    return (0.299*col.x + 0.587*col.y + 0.114*col.z);
+    //return sqrt( 0.299*pow(col.x, 2.0) + 0.587*pow(col.y, 2.0) + 0.114*pow(col.z, 2.0) );
+}
+
+void main() {
+    vec3 refl = reflect(normalize(rayDir), worldNorm);
+    vec4 rgbe = texture(hdr, SampleSphericalMap(refl));
+    vec3 rgb = decodeRGBE(rgbe);
+    //float alpha = pow(RGBtoLum(rgb), 2.0);
+
+    //vec3 envColor = rgb;
+    
+    //envColor = envColor / (envColor + vec3(1.0));
+    //envColor = pow(envColor, vec3(1.0/2.2));
+
+    //float alpha = pow(RGBtoLum(envColor), 2.0);
+
+    gl_FragColor = vec4(rgb, R);
+    //gl_FragColor = vec4(envColor, alpha);
+    //gl_FragColor = vec4(rgb, alpha);
+}
+`;
+
+var viewDir;
+// custom shader material
+{
+    viewDir = new THREE.ShaderMaterial({
+        uniforms: {
+            hdr: { value: new THREE.Texture() }
+        },
+        vertexShader: _VS,
+        fragmentShader: _FS,
+    });
+}
 
 init();
 animate();
@@ -130,8 +204,13 @@ function init() {
         .load( './assets/textures/environment/beach.hdr', function () {
 
             const hdrBackground = pmremGenerator.fromEquirectangular( hdrEquirect ).texture;
-            hdrEquirect.dispose();
-            pmremGenerator.dispose();
+            //hdrEquirect.dispose();
+            //pmremGenerator.dispose();
+
+            console.log(hdrEquirect);
+
+            viewDir.uniforms.hdr.value = hdrEquirect;
+            viewDir.transparent = true;
 
             //crest
             loader.load(
@@ -169,16 +248,16 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
-/*
+            
             // crest glass
             loader.load(
                 './assets/models/crest/CrestGlass.glb',
                 // called when the resource is loaded
                 function ( gltf ) {
 
-                    var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrBackground, metalness: 0, roughness: 0, transmission: 1, transparent: true});
+                    //var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrBackground, metalness: 0, roughness: 0, transmission: 1, transparent: true});
 
-                    gltf.scene.children[0].material = glassmat;
+                    gltf.scene.children[0].material = viewDir;
 
                     gltf.scene.children[0].position.x += 20;
                     
@@ -193,7 +272,7 @@ function init() {
                 function ( error ) {
                     console.log( 'An error happened' );
                 }
-            );*/
+            );
 
             //crest
             loader.load(
@@ -266,7 +345,7 @@ function init() {
                     //AO.flipY = false;
     
                     var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
-                    gltf.scene.children[0].material = lambert;
+                    gltf.scene.children[0].material = viewDir;
                     
                     objects.push(gltf.scene.children[0]);
                     scene.add(gltf.scene.children[0]);
