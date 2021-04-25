@@ -1,7 +1,7 @@
 import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
-import { RGBELoader } from './ThreeJS/RGBELoader.js';
+import { RGBELoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/RGBELoader.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -23,9 +23,6 @@ let camera, scene, renderer, composer;
 let renderScene, gammaPass, SMAApass;
 let mainLight;
 
-let hdrCubeMap;
-let hdrCubeRenderTarget;
-
 var interactionManager;
 
 let objects = [];
@@ -33,34 +30,45 @@ let objects = [];
 var params = {
 } 
 
+const USE_NORMAL = false;
 const _VS = `
-varying vec3 rayDir;
-varying vec3 worldNorm;
-varying float R;
+attribute vec3 tangent;
 
+varying vec3 rayDir;
+varying vec3 worldNorm;`
++
+(USE_NORMAL ? `
+varying mat3 TBN;
+varying vec2 _uv;` : ``)
++ `
 void main() {
     vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-    worldNorm = (mat3(modelMatrix) * normal);
-
+    worldNorm = (mat3(modelMatrix) * normal);` 
+    +
+    (USE_NORMAL ? 
+    `vec3 worldTangent = (mat3(modelMatrix) * tangent);
+    worldTangent = normalize(worldTangent- dot(worldTangent, worldNorm) * worldNorm);
+    vec3 worldBinorm = cross(worldNorm, worldTangent);
+    _uv = uv;
+    TBN = mat3(worldTangent, worldBinorm, worldNorm);` : ``)
+    + `
     rayDir = worldPos-cameraPosition;
-
-    vec3 I = normalize(worldPos - cameraPosition);
-    R = 1.0 + dot(I, worldNorm);
-    R = max(R * R, 0.1);
-
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`;
+}`;
 
 const _FS = `
 varying vec3 rayDir;
-varying vec3 worldNorm;
-varying float R;
-
-uniform sampler2D hdr;
+varying vec3 worldNorm;`
++
+(USE_NORMAL ? `
+varying mat3 TBN;
+varying vec2 _uv;
+uniform sampler2D normalMap;` : ``)
++ `
+uniform sampler2D envMap;
 
 const vec2 invAtan = vec2(0.1591, 0.3183);
-vec2 SampleSphericalMap(vec3 direction) {
+vec2 SampleEquirectMap(vec3 direction) {
     vec2 uv = vec2(atan(direction.z, direction.x), asin(direction.y));
     uv *= invAtan;
     uv += 0.5;
@@ -70,41 +78,40 @@ vec2 SampleSphericalMap(vec3 direction) {
 vec3 decodeRGBE( vec4 hdr ) {
     return hdr.rgb * exp2( (hdr.a*255.0)-128.0 );
     // return hdr.rgb * pow( 2.0, (hdr.a*255.0)-128.0 );
-}
-
-float RGBtoLum( vec3 col ) {
-    return (0.299*col.x + 0.587*col.y + 0.114*col.z);
-    //return sqrt( 0.299*pow(col.x, 2.0) + 0.587*pow(col.y, 2.0) + 0.114*pow(col.z, 2.0) );
-}
-
+}`
++ `
+const float MIN_ALPHA = 0.1;
 void main() {
-    vec3 refl = reflect(normalize(rayDir), worldNorm);
-    vec4 rgbe = texture(hdr, SampleSphericalMap(refl));
+    vec3 ray = normalize(rayDir);`
+    +
+    (USE_NORMAL ? `
+    vec3 norm = TBN * (texture(normalMap, _uv).xyz * 2.0 - 1.0);
+    vec3 refl = reflect(ray, norm);
+    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
     vec3 rgb = decodeRGBE(rgbe);
-    //float alpha = pow(RGBtoLum(rgb), 2.0);
+    float fresnel = 1.0 + dot(ray, norm);` 
+    : `
+    vec3 refl = reflect(ray, worldNorm);
+    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
+    vec3 rgb = decodeRGBE(rgbe);
+    float fresnel = 1.0 + dot(ray, worldNorm);`)
+    + `
+    fresnel = max(fresnel * fresnel, MIN_ALPHA);
 
-    //vec3 envColor = rgb;
-    
-    //envColor = envColor / (envColor + vec3(1.0));
-    //envColor = pow(envColor, vec3(1.0/2.2));
-
-    //float alpha = pow(RGBtoLum(envColor), 2.0);
-
-    gl_FragColor = vec4(rgb, R);
-    //gl_FragColor = vec4(envColor, alpha);
-    //gl_FragColor = vec4(rgb, alpha);
-}
-`;
+    gl_FragColor = vec4(rgb, fresnel);
+}`;
 
 var viewDir;
 // custom shader material
 {
     viewDir = new THREE.ShaderMaterial({
         uniforms: {
-            hdr: { value: new THREE.Texture() }
+            envMap: { value: new THREE.Texture() },
+            normalMap: { value: new THREE.Texture() }
         },
         vertexShader: _VS,
         fragmentShader: _FS,
+        depthWrite: false
     });
 }
 
@@ -168,12 +175,12 @@ function init() {
         mainLight.position.y = 2;
         mainLight.position.z = 2;
         mainLight.position.x = 2;
-        scene.add(mainLight);
+        //scene.add(mainLight);
 
         // ambient light setup
         const ambLight = new THREE.AmbientLight( 0x555555 );
         ambLight.color.convertSRGBToLinear();
-        scene.add(ambLight);
+        //scene.add(ambLight);
 
         composer = new EffectComposer( renderer );
 
@@ -204,13 +211,12 @@ function init() {
         .load( './assets/textures/environment/beach.hdr', function () {
 
             const hdrBackground = pmremGenerator.fromEquirectangular( hdrEquirect ).texture;
-            //hdrEquirect.dispose();
-            //pmremGenerator.dispose();
+            //
+            pmremGenerator.dispose();
 
-            console.log(hdrEquirect);
-
-            viewDir.uniforms.hdr.value = hdrEquirect;
+            viewDir.uniforms.envMap.value = hdrEquirect;
             viewDir.transparent = true;
+            hdrEquirect.dispose();
 
             //crest
             loader.load(
@@ -256,7 +262,7 @@ function init() {
                 function ( gltf ) {
 
                     //var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrBackground, metalness: 0, roughness: 0, transmission: 1, transparent: true});
-
+                    
                     gltf.scene.children[0].material = viewDir;
 
                     gltf.scene.children[0].position.x += 20;
@@ -343,13 +349,14 @@ function init() {
                     albedo.flipY = false;
                     normal.flipY = false;
                     //AO.flipY = false;
+
+                    viewDir.uniforms.normalMap.value = normal;
     
                     var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
                     gltf.scene.children[0].material = viewDir;
-                    
+
                     objects.push(gltf.scene.children[0]);
                     scene.add(gltf.scene.children[0]);
-    
                 },
                 // called while loading is progressing
                 function ( xhr ) {

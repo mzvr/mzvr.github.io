@@ -144,7 +144,7 @@ function init() {
     {
         const loader = new THREE.TextureLoader();
         const texture = loader.load(
-            './assets/textures/skybox/skybox.png',
+            './assets/textures/skybox/skybox6.png',
             () => {
                 texture.encoding = THREE.sRGBEncoding;
                 const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
