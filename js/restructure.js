@@ -82,7 +82,7 @@ function init() {
     controls.update();
 
     // sun setep
-    mainLight = new THREE.DirectionalLight(0xFFFFFF, params.brightness);
+    mainLight = new THREE.DirectionalLight(0xFFFFE9, params.brightness);
     mainLight.position.y = sunHeight;
     mainLight.position.z = sunDist*Math.sin(params.sunRotation);
     mainLight.position.x = sunDist*Math.cos(params.sunRotation);
@@ -144,7 +144,7 @@ function init() {
     {
         const loader = new THREE.TextureLoader();
         const texture = loader.load(
-            './assets/textures/skybox/skybox6.png',
+            './assets/textures/skybox/skybox7.png',
             () => {
                 texture.encoding = THREE.sRGBEncoding;
                 const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
@@ -198,7 +198,7 @@ function init() {
                 normal.flipY = false;
                 //AO.flipY = false;
 
-                var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
+                var lambert = new THREE.MeshStandardMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
                 //lambert.aoMapIntensity = 1;
                 gltf.scene.children[0].material = lambert;
                 

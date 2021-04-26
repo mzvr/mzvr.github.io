@@ -218,7 +218,7 @@ function init() {
             viewDir.transparent = true;
             hdrEquirect.dispose();
 
-            //crest
+            // crest
             loader.load(
                 './assets/models/crest/Crest.glb',
                 // called when the resource is loaded
@@ -235,7 +235,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const crestmat = new THREE.MeshStandardMaterial({ envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const crestmat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = crestmat;
 
@@ -266,8 +266,7 @@ function init() {
                     gltf.scene.children[0].material = viewDir;
 
                     gltf.scene.children[0].position.x += 20;
-                    
-                    objects.push(gltf.scene.children[0]);
+
                     scene.add(gltf.scene.children[0]);
                 },
                 // called while loading is progressing
@@ -280,7 +279,7 @@ function init() {
                 }
             );
 
-            //crest
+            // torch
             loader.load(
                 './assets/models/torch/TorchHP.glb',
                 // called when the resource is loaded
@@ -297,7 +296,7 @@ function init() {
                     rough.flipY = false;
                     metal.flipY = false;
 
-                    const torchmat = new THREE.MeshStandardMaterial({ envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
+                    const torchmat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1, roughnessMap: rough, metalnessMap: metal, metalness: 1});
 
                     gltf.scene.children[0].material = torchmat;
 
@@ -319,9 +318,158 @@ function init() {
                 }
             );
 
+            // balaclava
+            loader.load(
+                './assets/models/balaclava/balaclava.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/balaclava/Balaclava.jpg');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    albedo.flipY = false;
+
+                    const mat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1});
+
+                    gltf.scene.children[0].geometry.scale(7,7,7);
+                    gltf.scene.children[0].material = mat;
+                    gltf.scene.children[0].position.x += 40;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            // glove
+            loader.load(
+                './assets/models/glove/glove.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/glove/Glove_Albedo.jpg');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    albedo.flipY = false;
+
+                    const mat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1});
+
+                    gltf.scene.children[0].geometry.scale(7,7,7);
+                    gltf.scene.children[0].material = mat;
+                    gltf.scene.children[0].position.x += 50;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            // kangaroo
+            loader.load(
+                './assets/models/kangaroo/kangaroo.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/kangaroo/Kangaroo.jpg');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    albedo.flipY = false;
+
+                    const mat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1});
+
+                    gltf.scene.children[0].geometry.scale(7,7,7);
+                    gltf.scene.children[0].material = mat;
+                    gltf.scene.children[0].position.x += 60;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            // meteor
+            loader.load(
+                './assets/models/meteor/meteor.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/meteor/Meteor Big.jpg');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    albedo.flipY = false;
+
+                    const mat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1});
+
+                    gltf.scene.children[0].material = mat;
+
+                    gltf.scene.children[0].position.x += 70;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
+
+            // meteor small
+            loader.load(
+                './assets/models/meteor Small/meteorSmall.glb',
+                // called when the resource is loaded
+                function ( gltf ) {
+
+                    const albedo = new THREE.TextureLoader().load( './assets/models/meteor Small/Meteor Little1.jpg');
+                    albedo.encoding = THREE.sRGBEncoding;
+                    albedo.flipY = false;
+
+                    const mat = new THREE.MeshStandardMaterial({ envMapIntensity: 2, envMap: hdrBackground, map: albedo, roughness: 1});
+                    gltf.scene.children[0].geometry.scale(7,7,7);
+                    gltf.scene.children[0].material = mat;
+
+                    gltf.scene.children[0].position.x += 80;
+                    
+                    objects.push(gltf.scene.children[0]);
+                    scene.add(gltf.scene.children[0]);
+
+                },
+                // called while loading is progressing
+                function ( xhr ) {
+                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                },
+                // called when loading has errors
+                function ( error ) {
+                    console.log( 'An error happened' );
+                }
+            );
         } );
 
-        //shuttle
+        // shuttle
         {
             loader.load(
                 './assets/models/shuttle/shuttle.glb',
