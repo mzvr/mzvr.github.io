@@ -2,6 +2,7 @@ import * as THREE from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.126.1/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/RGBELoader.js';
+import { EXRLoader } from 'https://unpkg.com/three@0.126.1/examples/jsm/loaders/EXRLoader.js';
 
 import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
@@ -17,6 +18,8 @@ import { CameraRaycaster } from './scripts/CameraRaycaster.js';
 import { InteractionManager } from './scripts/InteractionManager.js';
 import { OrbitGui } from './scripts/OrbitGui.js';
 
+import { GlassMaterial } from './scripts/GlassMaterial.js';
+
 let canvas, stats, gui;
 let clock, deltaTime, totalTime; 
 let camera, scene, renderer, composer;
@@ -29,91 +32,6 @@ let objects = [];
 
 var params = {
 } 
-
-const USE_NORMAL = false;
-const _VS = `
-attribute vec3 tangent;
-
-varying vec3 rayDir;
-varying vec3 worldNorm;`
-+
-(USE_NORMAL ? `
-varying mat3 TBN;
-varying vec2 _uv;` : ``)
-+ `
-void main() {
-    vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-    worldNorm = (mat3(modelMatrix) * normal);` 
-    +
-    (USE_NORMAL ? 
-    `vec3 worldTangent = (mat3(modelMatrix) * tangent);
-    worldTangent = normalize(worldTangent- dot(worldTangent, worldNorm) * worldNorm);
-    vec3 worldBinorm = cross(worldNorm, worldTangent);
-    _uv = uv;
-    TBN = mat3(worldTangent, worldBinorm, worldNorm);` : ``)
-    + `
-    rayDir = worldPos-cameraPosition;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-
-const _FS = `
-varying vec3 rayDir;
-varying vec3 worldNorm;`
-+
-(USE_NORMAL ? `
-varying mat3 TBN;
-varying vec2 _uv;
-uniform sampler2D normalMap;` : ``)
-+ `
-uniform sampler2D envMap;
-
-const vec2 invAtan = vec2(0.1591, 0.3183);
-vec2 SampleEquirectMap(vec3 direction) {
-    vec2 uv = vec2(atan(direction.z, direction.x), asin(direction.y));
-    uv *= invAtan;
-    uv += 0.5;
-    return uv;
-}
-
-vec3 decodeRGBE( vec4 hdr ) {
-    return hdr.rgb * exp2( (hdr.a*255.0)-128.0 );
-    // return hdr.rgb * pow( 2.0, (hdr.a*255.0)-128.0 );
-}`
-+ `
-const float MIN_ALPHA = 0.1;
-void main() {
-    vec3 ray = normalize(rayDir);`
-    +
-    (USE_NORMAL ? `
-    vec3 norm = TBN * (texture(normalMap, _uv).xyz * 2.0 - 1.0);
-    vec3 refl = reflect(ray, norm);
-    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
-    vec3 rgb = decodeRGBE(rgbe);
-    float fresnel = 1.0 + dot(ray, norm);` 
-    : `
-    vec3 refl = reflect(ray, worldNorm);
-    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
-    vec3 rgb = decodeRGBE(rgbe);
-    float fresnel = 1.0 + dot(ray, worldNorm);`)
-    + `
-    fresnel = max(fresnel * fresnel, MIN_ALPHA);
-
-    gl_FragColor = vec4(rgb, fresnel);
-}`;
-
-var viewDir;
-// custom shader material
-{
-    viewDir = new THREE.ShaderMaterial({
-        uniforms: {
-            envMap: { value: new THREE.Texture() },
-            normalMap: { value: new THREE.Texture() }
-        },
-        vertexShader: _VS,
-        fragmentShader: _FS,
-        depthWrite: false
-    });
-}
 
 init();
 animate();
@@ -206,17 +124,37 @@ function init() {
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         pmremGenerator.compileEquirectangularShader();
 
-        const hdrEquirect = new RGBELoader()
-        .setDataType( THREE.UnsignedByteType )
-        .load( './assets/textures/environment/beach.hdr', function () {
+        // skybox setup
+        {
+            const loader = new THREE.TextureLoader();
+            const texture = loader.load(
+            './assets/textures/skybox/skybox7.png',
+            () => {
+                texture.encoding = THREE.sRGBEncoding;
+                const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+                rt.fromEquirectangularTexture(renderer, texture);
+                scene.background = rt;
+            });
+        }
 
-            const hdrBackground = pmremGenerator.fromEquirectangular( hdrEquirect ).texture;
-            //
+        var reflMap;
+        new EXRLoader()
+			.setDataType( THREE.UnsignedByteType )
+			.load( './assets/textures/environment/skybox3K.exr', function ( texture ) {
+                reflMap = texture;
+        });
+
+        new EXRLoader()
+			.setDataType( THREE.UnsignedByteType )
+			.load( './assets/textures/environment/skyboxMipmap.exr', function ( texture ) {
+            
+            const hdrBackground = pmremGenerator.fromEquirectangular( texture ).texture;
+            
             pmremGenerator.dispose();
+            var GlassMat = new GlassMaterial(reflMap);
+            GlassMat.transparent = true;
+            texture.dispose();
 
-            viewDir.uniforms.envMap.value = hdrEquirect;
-            viewDir.transparent = true;
-            hdrEquirect.dispose();
 
             // crest
             loader.load(
@@ -263,7 +201,7 @@ function init() {
 
                     //var glassmat = new THREE.MeshPhysicalMaterial({envMap: hdrBackground, metalness: 0, roughness: 0, transmission: 1, transparent: true});
                     
-                    gltf.scene.children[0].material = viewDir;
+                    gltf.scene.children[0].material = GlassMat;
 
                     gltf.scene.children[0].position.x += 20;
 
@@ -366,7 +304,7 @@ function init() {
                     
                     objects.push(gltf.scene.children[0]);
                     scene.add(gltf.scene.children[0]);
-
+                    
                 },
                 // called while loading is progressing
                 function ( xhr ) {
@@ -467,58 +405,58 @@ function init() {
                     console.log( 'An error happened' );
                 }
             );
+
+            // shuttle
+            {
+                loader.load(
+                    './assets/models/shuttle/shuttle.glb',
+                    // called when the resource is loaded
+                    function ( gltf ) {
+        
+                        gltf.animations; // Array<THREE.AnimationClip>
+                        gltf.scene; // THREE.Group
+                        gltf.scenes; // Array<THREE.Group>
+                        gltf.cameras; // Array<THREE.Camera>
+                        gltf.asset; // Object
+        
+                        gltf.scene.children[0].geometry.computeTangents();
+                        gltf.scene.children[0].scale.set(1,1,1);
+                        //gltf.scene.children[0].castShadow = true;
+                        //gltf.scene.children[0].receiveShadow = true;
+        
+                        const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2kAlbedo.png');
+                        albedo.encoding = THREE.sRGBEncoding;
+                        const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2kNormal.png');
+                        normal.encoding = THREE.LinearEncoding;
+                        //const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2kAO.png');
+                        //AO.encoding = THREE.LinearEncoding;
+        
+                        albedo.flipY = false;
+                        normal.flipY = false;
+                        //AO.flipY = false;
+
+                        var GlassMatNorm = new GlassMaterial(reflMap, normal);
+                        GlassMatNorm.transparent = true;
+
+                        GlassMatNorm.uniforms.normalMap.value = normal;
+        
+                        var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
+                        gltf.scene.children[0].material = GlassMatNorm;
+
+                        objects.push(gltf.scene.children[0]);
+                        scene.add(gltf.scene.children[0]);
+                    },
+                    // called while loading is progressing
+                    function ( xhr ) {
+                        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+                    },
+                    // called when loading has errors
+                    function ( error ) {
+                        console.log( 'An error happened' );
+                    }
+                );
+            }
         } );
-
-        // shuttle
-        {
-            loader.load(
-                './assets/models/shuttle/shuttle.glb',
-                // called when the resource is loaded
-                function ( gltf ) {
-    
-                    gltf.animations; // Array<THREE.AnimationClip>
-                    gltf.scene; // THREE.Group
-                    gltf.scenes; // Array<THREE.Group>
-                    gltf.cameras; // Array<THREE.Camera>
-                    gltf.asset; // Object
-    
-                    gltf.scene.children[0].geometry.computeTangents();
-                    gltf.scene.children[0].scale.set(1,1,1);
-                    //gltf.scene.children[0].castShadow = true;
-                    //gltf.scene.children[0].receiveShadow = true;
-    
-                    const albedo = new THREE.TextureLoader().load( './assets/models/shuttle/2kAlbedo.png');
-                    albedo.encoding = THREE.sRGBEncoding;
-                    const normal = new THREE.TextureLoader().load( './assets/models/shuttle/2kNormal.png');
-                    normal.encoding = THREE.LinearEncoding;
-                    //const AO = new THREE.TextureLoader().load( './assets/models/shuttle/2kAO.png');
-                    //AO.encoding = THREE.LinearEncoding;
-    
-                    albedo.flipY = false;
-                    normal.flipY = false;
-                    //AO.flipY = false;
-
-                    viewDir.uniforms.normalMap.value = normal;
-    
-                    var lambert = new THREE.MeshPhysicalMaterial({ map: albedo, normalMap: normal, roughness: 1, vertexTangents: true});
-                    gltf.scene.children[0].material = viewDir;
-
-                    objects.push(gltf.scene.children[0]);
-                    scene.add(gltf.scene.children[0]);
-                },
-                // called while loading is progressing
-                function ( xhr ) {
-                    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-                },
-                // called when loading has errors
-                function ( error ) {
-                    console.log( 'An error happened' );
-                }
-            );
-        }
-
-        
-        
 
         let controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = true;
@@ -561,6 +499,8 @@ function animate() {
 
     requestAnimationFrame( animate );
 }
+
+var axis = new THREE.Vector3(.5,.5,.5).normalize();
 
 function update() {
     interactionManager.update(deltaTime);

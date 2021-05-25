@@ -27,6 +27,7 @@ class MultiOrbitController {
         this.zoomDistance = zoom;
     }
 
+    // sets new position in world space to orbit around
     setNewTarget( newTarget ) {
         if (newTarget.equals( this.orbitControls.target ) ) return;
 
@@ -39,6 +40,7 @@ class MultiOrbitController {
 
         // setup variables for movement
         this.orbitControls.enableZoom = false;
+        this.orbitControls.enablePan = false;
         this.needsUpdate = true;
         this.totalTime = 0.0;
         this.savedRotation = this.orbitor.quaternion.clone();
@@ -60,6 +62,7 @@ class MultiOrbitController {
                 this.orbitControls.object = this.orbitor;
                 this.needsUpdate = false;
                 this.orbitControls.enableZoom = true;
+                this.orbitControls.enablePan = true;
                 return;
             }
 
