@@ -8,11 +8,11 @@ class OrbitGui {
         this.pivotObject = new THREE.Object3D();
 
         this.textParams = {
-            textField: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam mattis lacus lorem. Nullam non justo odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ipsum sem, venenatis sed pellentesque ut, pretium vitae turpis. Proin ullamcorper felis eu felis tincidunt, ac convallis lorem dignissim. Morbi a tempus turpis. Sed vulputate odio a eros interdum, ac consectetur odio vestibulum. Donec eu egestas dui.',
+            textField: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.  ',
             align: 'left',
-            width: 300,
-            letterSpacing: 0,
-            lineHeight: 30
+            width: 550,
+            letterSpacing: 0.5,
+            lineHeight: 35
         }
 
         this.camera = camera;
@@ -48,7 +48,7 @@ class OrbitGui {
                 align: thisObj.textParams.align, 
                 width: thisObj.textParams.width,
                 letterSpacing: thisObj.textParams.letterSpacing, 
-                lineHeight: thisObj.textParams.lineHeight });
+                lineHeight: thisObj.textParams.lineHeight});
 
             
             // the texture atlas containing our glyphs
@@ -82,7 +82,9 @@ class OrbitGui {
                 thisObj.textObject.translateX(-center.x);
                 thisObj.textObject.translateY(center.y);
 
-                thisObj.pivotObject.position.z = -1;
+                thisObj.textObject.translateY(-0.3);
+
+                thisObj.pivotObject.position.z = -0.8;
                 thisObj.pivotObject.add(thisObj.textObject)
             });
         });
@@ -109,7 +111,7 @@ class OrbitGui {
 
         var currentAngle = this.pivotObject.quaternion.angleTo(target);
 
-        this.pivotObject.quaternion.multiply(frameRotation);
+        //this.pivotObject.quaternion.multiply(frameRotation);
 
         var angle = this.pivotObject.quaternion.angleTo(target);
 

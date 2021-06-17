@@ -24,6 +24,9 @@ let camera, scene, renderer, composer, controls;
 let renderScene, bloomPass, ACESPass, gammaPass, SMAApass;
 let mainLight, sun;
 
+//let lensflare = new Lensflare();
+//let lensflarePos = new THREE.Vector3();
+
 const params = {
     renderQuality: 1,
     brightness: 5,
@@ -70,7 +73,7 @@ function init() {
     const fov = 70;
     const aspect = 2;  
     const near = 0.1;
-    const far = 1000;
+    const far = 400;
     camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
     camera.position.z = 2;
     camera.position.x = 3;
@@ -92,12 +95,20 @@ function init() {
     /*const textureLoader = new THREE.TextureLoader();
     const textureFlare0 = textureLoader.load( "./assets/textures/sprites/FlareTest2.png" );
     textureFlare0.encoding = THREE.sRGBEncoding;
-    const lensflare = new Lensflare();
-    lensflare.addElement( new LensflareElement( textureFlare0, 256, 0 ) );
-    lensflare.addElement( new LensflareElement( textureFlare0, 128, 0.1 ) );
-    lensflare.addElement( new LensflareElement( textureFlare0, 80, 0.2 ) );
-    lensflare.addElement( new LensflareElement( textureFlare0, 60, -0.25 ) );
-    mainLight.add( lensflare );*/
+    const textureFlare1 = textureLoader.load( "./assets/textures/lensFlare/elipse.png" );
+    textureFlare1.encoding = THREE.LinearEncoding;
+    const textureFlare2 = textureLoader.load( "./assets/textures/lensFlare/lens_flare_sun_1024x1024.png" );
+    textureFlare2.encoding = THREE.sRGBEncoding;
+    
+    lensflare.addElement( new LensflareElement( textureFlare2, 256, 0 ) );
+    lensflare.addElement( new LensflareElement( textureFlare1, 128, 0.1 ) );
+    lensflare.addElement( new LensflareElement( textureFlare1, 80, 0.3 ) );
+    lensflare.addElement( new LensflareElement( textureFlare1, 80, 0.4 ) );
+    lensflare.addElement( new LensflareElement( textureFlare1, 120, 0.5 ) );
+    lensflarePos.x = -100;
+    lensflarePos.y = 20;
+    lensflarePos.z = -60;
+    scene.add( lensflare );*/
 
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -123,8 +134,8 @@ function init() {
     bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight), params.bloomStrength, params.bloomThreshold, params.bloomRadius );
     composer.addPass( bloomPass );
 
-    //ACESPass = new ShaderPass( ACESFilmicToneMappingShader );
-    //composer.addPass( ACESPass );
+    ACESPass = new ShaderPass( ACESFilmicToneMappingShader );
+    composer.addPass( ACESPass );
 
     gammaPass = new ShaderPass( GammaCorrectionShader );
     composer.addPass( gammaPass );
@@ -161,7 +172,7 @@ function init() {
         sun.position.y = sunHeight;
         sun.position.z = sunDist*Math.sin(params.sunRotation);
         sun.position.x = sunDist*Math.cos(params.sunRotation);
-        scene.add( sun );
+        //scene.add( sun );
     }
 
     {
@@ -263,7 +274,7 @@ function onWindowResize() {
     renderer.setSize( newWidth, newHeight, false );
     composer.setSize( newWidth, newHeight );
   
-  }
+}
 
 function animate(time) {
     
@@ -271,6 +282,10 @@ function animate(time) {
     stats.begin();
 
     //resizeRendererToDisplaySize(renderer);
+    //var pos = camera.position.clone().add(lensflarePos)
+    //lensflare.position.x = pos.x;
+    //lensflare.position.y = pos.y;
+    //lensflare.position.z = pos.z;
 
     render(time);
 
