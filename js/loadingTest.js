@@ -352,6 +352,7 @@ function setupRendering() {
         const far = 300;
         camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.set(30, 10, 20);
+        scene.add(camera);
         
         // rendering order
         composer = new EffectComposer( renderer );
@@ -416,9 +417,10 @@ function setupInteraction()
         controls.enablePan = true;
         controls.enableDamping = true;
 
+        var orbitGui = new OrbitGui(camera, renderer);
         var multiController = new MultiOrbitController(camera, controls, 20);
         var raycaster = new CameraRaycaster(camera, objects);
-        interactionManager = new InteractionManager(multiController, raycaster);
+        interactionManager = new InteractionManager(multiController, raycaster, orbitGui);
 
         resolve();
     });

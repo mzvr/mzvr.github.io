@@ -6,6 +6,7 @@ const maxAngle = 25 * Math.PI / 180;
 class OrbitGui {
     constructor(camera, renderer) {
         this.pivotObject = new THREE.Object3D();
+        this.pivotObject.name = "pivotObject";
 
         this.textParams = {
             textField: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.  ',
@@ -85,6 +86,7 @@ class OrbitGui {
                 thisObj.textObject.translateY(-0.3);
 
                 thisObj.pivotObject.position.z = -0.8;
+                console.log('add');
                 thisObj.pivotObject.add(thisObj.textObject)
             });
         });
@@ -96,7 +98,14 @@ class OrbitGui {
             align: this.textParams.align, 
             width: this.textParams.width, 
             letterSpacing: this.textParams.letterSpacing, 
-            lineHeight: this.textParams.lineHeight });
+            lineHeight: this.textParams.lineHeight 
+        });
+    }
+
+    changeText(newString) {
+        console.log("changed text");
+        this.textParams.textField = newString;
+        this.updateText();
     }
 
     update() {

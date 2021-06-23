@@ -41,6 +41,14 @@ class InteractionManager {
         
             this.multiOrbitController.setNewTarget(clickedObject.position);
             //this.orbitGui.setPivot(clickedObject.position);
+            console.log(clickedObject);
+            console.log('desc' in clickedObject);
+            if ('desc' in clickedObject) 
+            {
+                console.log(this);
+                this.orbitGui.changeText(clickedObject.desc)
+            };
+            
         }
     }
 
