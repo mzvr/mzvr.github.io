@@ -6,6 +6,7 @@ import {
 	Color,
 	DataTexture,
     FloatType,
+	sRGBEncoding,
 	InterleavedBuffer,
 	InterleavedBufferAttribute,
     LinearEncoding,
@@ -16,7 +17,10 @@ import {
 	RawShaderMaterial,
 	Vector2,
 	Vector3,
-	Vector4
+	Vector4,
+	NormalBlending,
+	SubtractiveBlending,
+	MultiplyBlending
 } from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 
 var Lensflare = function () {
@@ -195,6 +199,8 @@ var Lensflare = function () {
 
 		if ( positionView.z > 0 ) return; // lensflare is behind the camera
 
+		
+
 		positionScreen.copy( positionView ).applyMatrix4( camera.projectionMatrix );
 
 		// horizontal and vertical coordinate of the lower left corner of the pixels to copy
@@ -234,6 +240,9 @@ var Lensflare = function () {
 
 			var vecX = - positionScreen.x * 2;
 			var vecY = - positionScreen.y * 2;
+
+			renderer.outputEncoding = LinearEncoding;
+			//console.log(renderer.getRenderTarget());
 
 			for ( var i = 0, l = elements.length; i < l; i ++ ) {
 

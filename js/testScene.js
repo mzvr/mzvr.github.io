@@ -8,7 +8,8 @@ import { EffectComposer } from './ThreeJS/EffectComposer.js';
 import { RenderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from './ThreeJS/UnrealBloomPass.js';
-import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/SMAAPass.js';
+import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';
+import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/SMAAPass.js';
 import { FilmPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/FilmPass.js';
 
 import { GUI } from 'https://unpkg.com/three@0.126.1/examples/jsm/libs/dat.gui.module.js';
@@ -38,12 +39,12 @@ const params = {
     bloomThreshold: 0.04,
     bloomRadius: 0.0,
     sunRotation: -2.54,
+    sunHeight: 2,
     ambientLight: 0x4d4d64,
     rotation: true
 };
 
 const sunDist = 5;
-const sunHeight = 2;
 
 init();
 animate();
@@ -97,9 +98,9 @@ function init() {
 
     // sun setep
     mainLight = new THREE.DirectionalLight(0xFFFFE9, params.brightness);
-    mainLight.position.y = sunHeight;
-    mainLight.position.z = sunDist*Math.sin(params.sunRotation);
-    mainLight.position.x = sunDist*Math.cos(params.sunRotation);
+    mainLight.position.y = params.sunHeight * 2;
+    mainLight.position.z = sunDist*Math.sin(params.sunRotation) * 4;
+    mainLight.position.x = sunDist*Math.cos(params.sunRotation) * 4;
     scene.add(mainLight);
 
     // Lens flare
@@ -119,8 +120,17 @@ function init() {
     mainLight.shadow.mapSize.width = 2048*2; // default
     mainLight.shadow.mapSize.height = 2048*2; // default
     mainLight.shadow.camera.near = 0.5; // default
-    mainLight.shadow.camera.far = 20; // default
+    mainLight.shadow.camera.far = 40; // default
     mainLight.shadow.normalBias = 0.007;
+
+    var setShadowSize=(light1, sz)=>{
+        light1.shadow.camera.left = sz;
+        light1.shadow.camera.bottom = sz;
+        light1.shadow.camera.right = -sz;
+        light1.shadow.camera.top = -sz;
+    }
+    setShadowSize(mainLight,15.0);
+    mainLight.shadow.camera.updateProjectionMatrix();      
 
     // ambient light setup
     //const ambLight = new THREE.AmbientLight( params.ambientLight );
@@ -169,7 +179,7 @@ function init() {
         const geometry = new THREE.SphereGeometry(.1,32,32);
         const material = new THREE.MeshBasicMaterial(0xffffff);
         sun = new THREE.Mesh( geometry, material );
-        sun.position.y = sunHeight;
+        sun.position.y = params.sunHeight;
         sun.position.z = sunDist*Math.sin(params.sunRotation);
         sun.position.x = sunDist*Math.cos(params.sunRotation);
         scene.add( sun );
@@ -533,10 +543,14 @@ function init() {
         bloomPass.radius = Number( value );
     } );
     gui.add( params, 'sunRotation', -3.1415, 3.1415 ).onChange( function ( value ) {
-        mainLight.position.z = sunDist*Math.sin(value);
-        mainLight.position.x = sunDist*Math.cos(value);
-        sun.position.z = sunDist*Math.sin(value);
-        sun.position.x = sunDist*Math.cos(value);
+        mainLight.position.z = sunDist*Math.sin(value)*4;
+        mainLight.position.x = sunDist*Math.cos(value)*4;
+        sun.position.z = sunDist*Math.sin(value)*4;
+        sun.position.x = sunDist*Math.cos(value)*4;
+    } );
+    gui.add( params, 'sunHeight', -10.0, 10.0 ).onChange( function ( value ) {
+        sun.position.y = value * 2;
+        mainLight.position.y = value * 2;
     } );
     gui.addColor( params, 'ambientLight' )
         .onChange( function() { 
@@ -565,7 +579,7 @@ function onWindowResize() {
     renderer.setSize( newWidth, newHeight, false );
     composer.setSize( newWidth, newHeight );
   
-  }
+}
 
 function animate(time) {
     
@@ -588,7 +602,7 @@ function update() {
 
     if (params.rotation && objects != null) 
     {
-        if (axes == null) axes = new Array(new THREE.Vector3(Math.random(),Math.random(),Math.random()).normalize());
+        if (axes == null) axes = new Array();
         while (axes.length < objects.length)
         {
             axes.push(new THREE.Vector3(Math.random(),Math.random(),Math.random()).normalize());
