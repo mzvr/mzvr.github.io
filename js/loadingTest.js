@@ -93,8 +93,8 @@ const models = {
         },
         tags: {
             nameID: 'Crest',
-            title: 'Adelaide University Crest',
-            description: 'crestcrestcrest'
+            title: 'Framed University of Adelaide crest',
+            description: 'Many astronauts arrange for small mementos to travel as part of the Official Flight Kit. Upon return from space, they are often gifted to organisations as a token of support. Dr Andy Thomas gained a PhD in fluid mechanics at the University of Adelaide, and gifted this crest to University’s Alumni Association.'
         },
         transform: {
             position: [-5, 3, -20],
@@ -114,8 +114,8 @@ const models = {
         },
         tags: {
             nameID: 'Torch',
-            title: '2000 Sydney Olympic Torch',
-            description: 'torchtorchtorch'
+            title: 'Sydney Olympic Torch',
+            description: 'It’s the year 2000 and the stage is set for the greatest Olympics the world has ever seen. For months, engineers at the University of Adelaide have been designing the inter-workings of the Sydney Olympic torch. Subsequently Dr Thomas coordinated efforts for the torch to circle the earth aboard the International Space Station.    '
         },
         transform: {
             position: [-30, 0, 3],
@@ -123,17 +123,19 @@ const models = {
             scale: [.1, .1, .1]
         }
     },
-    balaclava: {
+    balaklava: {
         geometry: {
-            url: './assets/models/balaclava/balaclava.glb'
+            url: './assets/models/balaklava/balaklava.glb'
         },
         material: {
-            map: './assets/models/balaclava/Balaclava.jpg',
+            map: './assets/models/balaklava/BalaklavaCol.png',
+            normalMap: './assets/models/balaklava/BalaklavaNormal.png',
+            roughnessMap: './assets/models/balaklava/BalaklavaRoughness.png',
         },
         tags: {
-            nameID: 'Balaclava',
-            title: 'Sir Douglas Mawson\'s Artic Balaclava',
-            description: 'balaclavabalaclavabalaclava'
+            nameID: 'Balaklava',
+            title: 'Antarctic Explorer Balaclava',
+            description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. This balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age. '
         },
         transform: {
             position: [-30, -7, -10],
@@ -164,15 +166,35 @@ const models = {
             url: './assets/models/kangaroo/kangaroo.glb'
         },
         material: {
-            map:  './assets/models/kangaroo/Kangaroo.jpg',
+            map: './assets/models/kangaroo/kangaroo.png',
+            roughnessMap: './assets/models/kangaroo/kangarooRoughness.png'
         },
         tags: {
             nameID: 'Kangaroo',
-            title: 'Plush Kangaroo',
-            description: 'kangarookangarookangaroo'
+            title: 'Kangaroo Stuffed Toy',
+            description: 'Did you know all NASA astronauts must be American citizens? Dr Andrew Thomas grew up in Adelaide and became an American citizen after moving to the US for his career. Kangaroos are one of the most iconic Aussie symbols and this stuffed toy travelled with Andy on his four space missions. '
         },
         transform: {
             position: [10, 10, -10],
+            rotation: [0, 0, 0],
+            scale: [7, 7, 7]
+        }
+    },
+    hat: {
+        geometry: {
+            url: './assets/models/hat/hat.glb'
+        },
+        material: {
+            map: './assets/models/hat/hatCol.png',
+            roughnessMap: './assets/models/hat/hatRoughness.png'
+        },
+        tags: {
+            nameID: 'Hat',
+            title: 'Australia Hat',
+            description: 'hathathat'
+        },
+        transform: {
+            position: [-21, -6, -23],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
         }
@@ -200,7 +222,7 @@ const models = {
             url: './assets/models/meteor Small/meteorSmall.glb'
         },
         material: {
-            map:  './assets/models/meteor Small/Meteor Little1.jpg',
+            map:  './assets/models/meteor Small/meteorSmall.png',
         },
         tags: {
             nameID: 'smlMeteor',
@@ -215,6 +237,7 @@ const models = {
     }
 }
 
+// entry point
 initialise();
 
 function createStats() {
@@ -258,7 +281,6 @@ function loadGeometry(url, calculateTangents = false) {
             if (calculateTangents) {
                 result.scene.children[0].geometry.computeTangents();
             }
-
             resolve(result.scene.children[0].geometry);
         })
     });
@@ -494,7 +516,7 @@ function loadModels() {
                     scene.add(frame) 
                 }) 
             }),
-            loadMesh(models.balaclava).then(result => { 
+            loadMesh(models.balaklava).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
             }),
@@ -503,6 +525,10 @@ function loadModels() {
                 scene.add(result) 
             }),
             loadMesh(models.kangaroo).then(result => { 
+                objects.push(result), 
+                scene.add(result) 
+            }),
+            loadMesh(models.hat).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
             }),
@@ -539,6 +565,7 @@ function loadScene() {
     });
 }
 
+// setup winow and load assets
 function initialise() {
     stats = createStats();
     gui = createGUI();
@@ -553,7 +580,7 @@ function initialise() {
         // at this point scene is ready to be shown
         console.log("Finished loading");
 
-        // start main loop
+        // start game
         animate();
     });
 }
@@ -576,7 +603,7 @@ function animate() {
 var axes;
 var speeds;
 
-// do game logic
+// game logic
 function update() {
     interactionManager.update(deltaTime);
 
@@ -600,7 +627,7 @@ function update() {
     }
 }
 
-// do rendering logic
+// rendering logic
 function render() {
     composer.render();
 }
