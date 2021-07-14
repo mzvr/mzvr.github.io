@@ -68,7 +68,7 @@ const models = {
             url: './assets/models/shuttle/shuttle.glb'
         },
         material: {
-            map: './assets/models/shuttle/2kAlbedo.png',
+            map: './assets/models/shuttle/2kAlbedoEndeavour.png',
             normalMap: './assets/models/shuttle/2kNormal.png',
             metalness: 0.0,
             roughness: 1.0
@@ -424,8 +424,10 @@ function setupInteraction()
         const controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = true;
         controls.enableDamping = true;
+        controls.dampingFactor = 0.015;
 
         var orbitGui = new OrbitGui(camera, renderer);
+        
         var multiController = new MultiOrbitController(camera, controls, 20);
         var raycaster = new CameraRaycaster(camera, objects);
         interactionManager = new InteractionManager(multiController, raycaster, orbitGui);
@@ -508,6 +510,7 @@ function loadModels() {
     return new Promise (resolve => {
         Promise.all([
             loadMesh(models.shuttle).then(result => { 
+                objects.unshift(result),
                 scene.add(result) 
             }),
             loadMesh(models.crest).then(result => {
@@ -597,7 +600,9 @@ function initialise() {
         // need to call render once to finish setup
         render();
 
-        // at this point scene is ready to be shown
+        // at this point scene is loaded onto user device
+        // may not be ready to display though
+        // seems to be loading from memory to gpu
         console.log("Finished loading");
 
         // start game
@@ -637,10 +642,10 @@ function update() {
         while (axes.length < objects.length)
         {
             axes.push(new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1).normalize());
-            speeds.push((Math.random < 0.5 ? -1 : 1) * Math.random() * (0.01 + 0.005));
+            speeds.push((Math.random < 0.5 ? -1 : 1) * Math.random() * 0.005 + 0.0025);
         }
 
-        for (var i=0; i<objects.length; i++)
+        for (var i=1; i<objects.length; i++)
         {
             objects[i].rotateOnAxis(axes[i], speeds[i]);
         }
