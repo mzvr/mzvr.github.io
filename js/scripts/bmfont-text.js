@@ -3429,24 +3429,34 @@ module.exports = function createSDFShader (opt) {
       '  #ifdef GL_OES_standard_derivatives',
       '    float afwidth = length(vec2(dFdx(value), dFdy(value))) * 0.70710678118654757;',
       '  #else',
-      '    float afwidth = (1.0 / 32.0) * (1.4142135623730951 / (2.0 * gl_FragCoord.w));',
+      '    float afwidth = (1.0 / 32.0) * (1.4142135623730951 / (0.5 * gl_FragCoord.w));',
       '  #endif',
       '  return smoothstep(0.5 - afwidth, 0.5 + afwidth, value);',
       '}',
 
       'void main() {',
       '  vec4 texColor = texture2D(map, vUv);',
-      alphaTest === 0
-        ? ''
-        : '  if (texColor.a+1.0 < ' + alphaTest + ') discard;',
-      //'  float alpha = aastep(texColor.a);',
-      //'  gl_FragColor = vec4(texColor.xyz, 1.0);',
-      '  float alpha2 = smoothstep(' + (alphaTest) + ', ' + (alphaTest+0.01) + ', texColor.a);',
-      '  alpha2 = clamp(alpha2, 0.0, 1.0);',
-      //'  gl_FragColor = vec4(color,alpha2);',
-      '  gl_FragColor = vec4(vec3(1.0), alpha2);',
+      '  float alpha = aastep(texColor.a);',
+      //alphaTest === 0
+      //  ? ''
+      //  : '  if (gl_FragColor.a < ' + alphaTest + ') discard;',
+      '  gl_FragColor = vec4(color, opacity * alpha);',
       
       '}'
+          /*'void main() {',
+          '  vec4 texColor = texture2D(map, vUv);',
+          alphaTest === 0
+            ? ''
+            : '  if (texColor.a+1.0 < ' + alphaTest + ') discard;',
+          //'  float alpha = aastep(texColor.a);',
+          //'  gl_FragColor = vec4(texColor.xyz, 1.0);',
+          '  float alpha2 = smoothstep(' + (alphaTest) + ', ' + (alphaTest+0.01) + ', texColor.a);',
+          '  alpha2 = clamp(alpha2, 0.0, 1.0);',
+          //'  gl_FragColor = vec4(color,alpha2);',
+          '  gl_FragColor = vec4(vec3(1.0), alpha2);',
+          
+          '}'*/
+
     ].join('\n')
   }, opt)
 }

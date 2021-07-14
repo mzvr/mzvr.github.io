@@ -21,7 +21,6 @@ import { OrbitGui } from './scripts/OrbitGui.js';
 import { CameraRaycaster } from './scripts/CameraRaycaster.js';
 import { InteractionManager } from './scripts/InteractionManager.js';
 
-
 // useful constants
 const PI = 3.14159;
 const Rad2Deg = 180.0 / PI;
@@ -33,10 +32,17 @@ const textureKeys = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'
 // global variables
 let canvas, stats, gui;
 let clock, deltaTime, totalTime; 
-let camera, scene, renderer, composer;
+let camera, scene, textScene, renderer, composer;
 let bloomPass, gammaPass, SMAApass;
 let mainLight;
 let reflectionMap, ambientLightMap;
+
+const introcurve = new THREE.CubicBezierCurve3(
+	new THREE.Vector3( 30.8277, 11.3447, 22.9208 ),
+	new THREE.Vector3( 310.599, 59.6473, 184.447 ),
+	new THREE.Vector3( 210.46, 455.478, 269.058 ),
+	new THREE.Vector3( 191.354, 586.909, 302.973 )
+);
 
 let objects = [];
 var interactionManager;
@@ -340,8 +346,10 @@ function setupRendering() {
         renderer = new THREE.WebGLRenderer({canvas});
         renderer.outputEncoding = THREE.LinearEncoding;
         renderer.physicallyCorrectLights = true;
+        renderer.autoClearColor = false;
 
         scene = new THREE.Scene();
+        textScene = new THREE.Scene();
         scene.background = new THREE.Color('blue');
         scene.background.convertSRGBToLinear();
 
@@ -349,14 +357,17 @@ function setupRendering() {
         const fov = 70;
         const aspect = 2;  
         const near = 0.1;
-        const far = 300;
+        const far = 3000;
         camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.set(30, 10, 20);
-        scene.add(camera);
+        textScene.add(camera);
         
         // rendering order
         composer = new EffectComposer( renderer );
         composer.addPass( new RenderPass( scene, camera ) );
+        
+        SMAApass = new SMAAPass( windowWidth(), windowHeight() );
+        composer.addPass( SMAApass );
 
         bloomPass = new UnrealBloomPass( 
             new THREE.Vector2( windowWidth(), windowHeight() ), 
@@ -368,9 +379,6 @@ function setupRendering() {
 
         gammaPass = new ShaderPass( GammaCorrectionShader );
         composer.addPass( gammaPass );
-
-        SMAApass = new SMAAPass( windowWidth(), windowHeight() );
-        composer.addPass( SMAApass );
 
         onWindowResize();
         window.addEventListener( 'resize', onWindowResize );
@@ -576,6 +584,16 @@ function initialise() {
     setupRendering()
     .then(() => loadScene())
     .then(() => {
+
+        const points = introcurve.getPoints( 50 );
+        const geometry = new THREE.BufferGeometry().setFromPoints( points );
+
+        const material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+
+        // Create the final object to add to the scene
+        const curveObject = new THREE.Line( geometry, material );
+        scene.add(curveObject);
+
         // need to call render once to finish setup
         render();
 
@@ -619,7 +637,7 @@ function update() {
         while (axes.length < objects.length)
         {
             axes.push(new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1).normalize());
-            speeds.push((Math.random < 0.5)?-1:1 * Math.random() * 0.01 + 0.005);
+            speeds.push((Math.random < 0.5 ? -1 : 1) * Math.random() * (0.01 + 0.005));
         }
 
         for (var i=0; i<objects.length; i++)
@@ -632,6 +650,7 @@ function update() {
 // rendering logic
 function render() {
     composer.render();
+    renderer.render(textScene, camera);
 }
 
 function windowWidth()

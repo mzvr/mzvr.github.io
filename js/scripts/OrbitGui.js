@@ -9,7 +9,8 @@ class OrbitGui {
         this.pivotObject.name = "pivotObject";
 
         this.textParams = {
-            textField: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.  ',
+            textField: '',
+            //textField: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.  ',
             align: 'left',
             width: 550,
             letterSpacing: 0.5,
@@ -80,19 +81,19 @@ class OrbitGui {
 
                 center.multiplyScalar(textScalar);
 
-                thisObj.textObject.translateX(-center.x);
-                thisObj.textObject.translateY(center.y);
-
-                thisObj.textObject.translateY(-0.3);
+                thisObj.textObject.position.x = -center.x;
+                thisObj.textObject.position.y = center.y - 0.3;
 
                 thisObj.pivotObject.position.z = -0.8;
-                console.log('add');
-                thisObj.pivotObject.add(thisObj.textObject)
+                
+                thisObj.pivotObject.add(thisObj.textObject);
             });
         });
     }
 
     updateText() {
+        const textScalar = 0.001;
+
         this.textObject.geometry.update({ 
             text: this.textParams.textField, 
             align: this.textParams.align, 
@@ -100,10 +101,19 @@ class OrbitGui {
             letterSpacing: this.textParams.letterSpacing, 
             lineHeight: this.textParams.lineHeight 
         });
+
+        // center text around pivot
+        var center = new THREE.Vector3();
+        this.textObject.geometry.computeBoundingBox();
+        this.textObject.geometry.boundingBox.getCenter(center);
+
+        center.multiplyScalar(textScalar);
+
+        this.textObject.position.x = -center.x;
+        this.textObject.position.y = center.y - 0.3;
     }
 
     changeText(newString) {
-        console.log("changed text");
         this.textParams.textField = newString;
         this.updateText();
     }

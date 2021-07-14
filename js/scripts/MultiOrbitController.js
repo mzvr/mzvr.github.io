@@ -1,7 +1,7 @@
 import { Object3D } from 'https://unpkg.com/three@0.126.1/build/three.module.js';
 import { MathUtils } from 'https://unpkg.com/three@0.126.1/src/math/MathUtils.js'
 
-const LengthTime = 0.7;
+const LengthTime = 1.7;
 
 class MultiOrbitController {
 
@@ -28,45 +28,51 @@ class MultiOrbitController {
     }
 
     // sets new position in world space to orbit around
-    setNewTarget( newTarget ) {
-        if (newTarget.equals( this.orbitControls.target ) ) return;
+    setNewTarget( newTarget ) 
+    {
+        if (newTarget.equals(this.orbitControls.target)) return;
 
         // set new target
         this.orbitControls.target = newTarget.clone();
         
+        var path = this.orbitor.position.clone().sub(this.orbitControls.target);
+        var direction = path.clone().normalize();
+        var targetPos = direction.multiplyScalar(this.zoomDistance).add(this.orbitControls.target);
+
         // orbit temporary object and track camera to that
-        this.tempObject.position.copy(this.orbitor.position);
+        this.tempObject.position.copy(targetPos);
         this.orbitControls.object = this.tempObject;
 
         // setup variables for movement
         this.orbitControls.enableZoom = false;
         this.orbitControls.enablePan = false;
+        this.orbitControls.enableRotate = false;
+        
+
         this.needsUpdate = true;
         this.totalTime = 0.0;
         this.savedRotation = this.orbitor.quaternion.clone();
         this.savedDistance = this.orbitor.position.distanceTo(newTarget);
     }
 
-    update(deltaTime) {
+    update(deltaTime) 
+    {
+        this.orbitControls.update();
 
         if (this.needsUpdate)
         {
             this.totalTime += deltaTime;
 
-            const alpha = MathUtils.smoothstep(this.totalTime, 0.0, LengthTime);
-
             // check if transformation is complete
-            if ( this.totalTime>LengthTime )
-            {
-                // restore variables
-                this.orbitControls.object = this.orbitor;
-                this.needsUpdate = false;
-                this.orbitControls.enableZoom = true;
-                this.orbitControls.enablePan = true;
-                return;
-            }
+            var complete = this.totalTime > LengthTime;
+            var percentageComplete = complete ? 1.0 : this.totalTime / LengthTime;
 
-            // direction from orbitor to target
+            const alpha = MathUtils.smoothstep(percentageComplete, 0.0, 1.0);
+            const alpha2 = MathUtils.smoothstep(1 - ((1-percentageComplete) * (1-percentageComplete)), 0.0, 1.0);
+
+            //this.orbitControls.dampingFactor = 1-alpha2;
+
+            // direction from target to orbitor
             const path = this.orbitControls.object.position.clone().sub(this.orbitControls.target);
             const direction = path.clone().normalize();
 
@@ -83,15 +89,22 @@ class MultiOrbitController {
             var invObj = this.tempObject.position.clone().sub(this.orbitControls.target).add(this.tempObject.position);
             this.tempObject.lookAt(invObj);
 
-            // convert linear range to inverse power
-            const invAlpha = 1 - alpha;
-
             // set rotation
-            var slerp = this.savedRotation.clone().slerp( this.tempObject.quaternion, 1-(invAlpha*invAlpha) );
+            var slerp = this.savedRotation.clone().slerp(this.orbitControls.object.quaternion, alpha2);
             this.orbitor.setRotationFromQuaternion(slerp);
-        }
 
-        this.orbitControls.update();
+            // restore orbit controls and stop further updates
+            if ( complete )
+            {
+                this.needsUpdate = false;
+
+                // restore variables
+                this.orbitControls.object = this.orbitor;
+                this.orbitControls.enableZoom = true;
+                this.orbitControls.enablePan = true;
+                this.orbitControls.enableRotate = true;
+            }
+        }
     }
 }
 
