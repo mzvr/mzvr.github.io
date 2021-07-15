@@ -33,6 +33,10 @@ class OrbitGui {
         this.pivotObject.position.z = -0.8;
         this.pivotObject.position.y = -0.15;
 
+        if (screen.height > screen.width) {
+            this.pivotObject.position.z = -1.6;
+        }
+
         this.textObject = new THREE.Object3D();
         this.titleObject = new THREE.Object3D();
 

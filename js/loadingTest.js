@@ -114,6 +114,28 @@ const models = {
             maxDist: 13.268408625781221
         }
     },
+    boomerang: {
+        geometry: {
+            url: './assets/models/boomerang/boomerang.glb'
+        },
+        material: {
+            map: './assets/models/boomerang/boomerangAlbedo.png'
+        },
+        tags: {
+            nameID: 'Boomerang',
+            title: 'Returning Boomerang',
+            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.'
+        },
+        transform: {
+            position: [-5, 0, -20],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1]
+        },
+        settings: {
+            minDist: 4.078136514915769,
+            maxDist: 13.268408625781221
+        }
+    },
     torch: {
         geometry: {
             url: './assets/models/torch/TorchHP.glb'
@@ -572,6 +594,10 @@ function loadModels() {
                     objects.push(frame), 
                     scene.add(frame) 
                 }) 
+            }),
+            loadMesh(models.boomerang).then(result => { 
+                objects.push(result), 
+                scene.add(result) 
             }),
             loadMesh(models.balaklava).then(result => { 
                 objects.push(result), 
