@@ -10,31 +10,46 @@ class OrbitGui {
 
         this.textParams = {
             textField: '',
-            //textField: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.  ',
+            titleField: '',
             align: 'left',
-            width: 550,
-            letterSpacing: 0.5,
-            lineHeight: 35
+            width: 700,
+            letterSpacing: -1,
+            lineHeight: 37
+        }
+
+        this.titleParams = {
+            textField: '',
+            titleField: '',
+            align: 'left',
+            width: 700,
+            letterSpacing: -0.3,
+            lineHeight: 55
         }
 
         this.camera = camera;
 
         this.camera.add(this.pivotObject);
 
+        this.pivotObject.position.z = -0.8;
+        this.pivotObject.position.y = -0.15;
+
         this.textObject = new THREE.Object3D();
+        this.titleObject = new THREE.Object3D();
 
         
         this.savedRotation = new THREE.Quaternion();
         //this.savedRotation.copy(this.camera.rotation);
         
         this.createText(renderer);
+
+        this.box = new THREE.Box3();
     }
 
     createText(renderer) {
         const thisObj = this;
         const textScalar = 0.001;
 
-        loadFont('../assets/fonts/Arial.fnt', function(err, font) {
+        loadFont('../assets/fonts/opensansSBoldsz36.fnt', function(err, font) {
             // create a geometry of packed bitmap glyphs, 
             // word wrapped to 300px and right-aligned
             var geometry = createGeometry({
@@ -50,20 +65,22 @@ class OrbitGui {
                 align: thisObj.textParams.align, 
                 width: thisObj.textParams.width,
                 letterSpacing: thisObj.textParams.letterSpacing, 
-                lineHeight: thisObj.textParams.lineHeight});
+                lineHeight: thisObj.textParams.lineHeight
+            });
 
             
             // the texture atlas containing our glyphs
             var textureLoader = new THREE.TextureLoader();
-            textureLoader.load('../assets/fonts/Arial.png', function (texture) {
+            textureLoader.load('../assets/fonts/opensansSBoldsz36.png', function (texture) {
     
                 texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
                 texture.magFilter = THREE.LinearFilter;
                 texture.minFilter = THREE.LinearMipmapLinearFilter
         
-                var textMaterial = new THREE.RawShaderMaterial(Shader({
+                const textMaterial = new THREE.RawShaderMaterial(Shader({
                     alphaTest: 0.46,
                     color: 'rgb(255, 255, 255)',
+                    opacity: 1.0,
                     depthTest: false,
                     map: texture,
                     side: THREE.DoubleSide,
@@ -82,11 +99,65 @@ class OrbitGui {
                 center.multiplyScalar(textScalar);
 
                 thisObj.textObject.position.x = -center.x;
-                thisObj.textObject.position.y = center.y - 0.3;
-
-                thisObj.pivotObject.position.z = -0.8;
+                thisObj.textObject.position.y = center.y * 0.5 - 0.3;
                 
                 thisObj.pivotObject.add(thisObj.textObject);
+            });
+        });
+
+        loadFont('../assets/fonts/opensansEBoldsz50.fnt', function(err, font) {
+            // create a geometry of packed bitmap glyphs, 
+            // word wrapped to 300px and right-aligned
+            var geometryTitle = createGeometry({
+                width: 300,
+                font: font
+            })
+            
+            // change text and other options as desired
+            // the options sepcified in constructor will
+            // be used as defaults
+
+            geometryTitle.update({ 
+                text: thisObj.textParams.titleField, 
+                align: thisObj.textParams.align, 
+                width: thisObj.textParams.width,
+                letterSpacing: thisObj.textParams.letterSpacing, 
+                lineHeight: thisObj.textParams.lineHeight
+            });
+
+            
+            // the texture atlas containing our glyphs
+            var textureLoader = new THREE.TextureLoader();
+            textureLoader.load('../assets/fonts/opensansEBoldsz50.png', function (texture) {
+    
+                texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                texture.magFilter = THREE.LinearFilter;
+                texture.minFilter = THREE.LinearMipmapLinearFilter
+        
+                const textMaterial = new THREE.RawShaderMaterial(Shader({
+                    alphaTest: 0.46,
+                    color: 'rgb(255, 255, 255)',
+                    opacity: 1.0,
+                    depthTest: false,
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: true
+                }));
+
+                thisObj.titleObject = new THREE.Mesh(geometryTitle, textMaterial);
+                thisObj.titleObject.scale.set(textScalar, -textScalar, textScalar);
+
+                // center text around pivot
+                var centerTitle = new THREE.Vector3();
+                geometryTitle.computeBoundingBox();
+                geometryTitle.boundingBox.getCenter(centerTitle);
+
+                centerTitle.multiplyScalar(textScalar);
+
+                thisObj.titleObject.position.x = -centerTitle.x;
+                thisObj.titleObject.position.y = centerTitle.y - 0.3;
+                
+                thisObj.pivotObject.add(thisObj.titleObject);
             });
         });
     }
@@ -110,36 +181,56 @@ class OrbitGui {
         center.multiplyScalar(textScalar);
 
         this.textObject.position.x = -center.x;
-        this.textObject.position.y = center.y - 0.3;
+        this.textObject.position.y = center.y * 2;
+
+        this.titleObject.geometry.update({ 
+            text: this.titleParams.titleField, 
+            align: this.titleParams.align, 
+            width: this.titleParams.width, 
+            letterSpacing: this.titleParams.letterSpacing, 
+            lineHeight: this.titleParams.lineHeight 
+        });
+
+        // center text around pivot
+        var centerTitle = new THREE.Vector3();
+        this.titleObject.geometry.computeBoundingBox();
+        this.titleObject.geometry.boundingBox.getCenter(centerTitle);
+
+        centerTitle.multiplyScalar(textScalar);
+
+        this.titleObject.position.x = center.x > 0.1 ? -center.x : -centerTitle.x;
+        this.titleObject.position.y = 0.04;
+
     }
 
-    changeText(newString) {
-        this.textParams.textField = newString;
+    changeText(desc="", title="") {
+        this.textParams.textField = desc;
+        this.titleParams.titleField = title;
         this.updateText();
     }
 
-    update() {
-        var frameRotation = this.savedRotation.multiply(this.camera.quaternion.clone().invert());
+    update(totalTime) {
+        //var frameRotation = this.savedRotation.multiply(this.camera.quaternion.clone().invert());
 
-        frameRotation.x *= 1;
-        frameRotation.y *= 1;
-        frameRotation.z *= 1;
-        frameRotation.w *= 1;
+        //frameRotation.x *= 1;
+        //frameRotation.y *= 1;
+        //frameRotation.z *= 1;
+        //frameRotation.w *= 1;
         
-        const target = new THREE.Quaternion(0,0,0,1);
+        //const target = new THREE.Quaternion(0,0,0,1);
 
-        var currentAngle = this.pivotObject.quaternion.angleTo(target);
+        //var currentAngle = this.pivotObject.quaternion.angleTo(target);
 
         //this.pivotObject.quaternion.multiply(frameRotation);
 
-        var angle = this.pivotObject.quaternion.angleTo(target);
+        //var angle = this.pivotObject.quaternion.angleTo(target);
 
-        if ( angle > maxAngle )
-        {
-            this.pivotObject.quaternion.copy(target.rotateTowards(this.pivotObject.quaternion, maxAngle));
-        }
+        //if ( angle > maxAngle )
+        //{
+        //    this.pivotObject.quaternion.copy(target.rotateTowards(this.pivotObject.quaternion, maxAngle));
+        //}
         
-        this.savedRotation.copy(this.camera.quaternion);
+        //this.savedRotation.copy(this.camera.quaternion);
     }
 
     setPivot(newPos) {

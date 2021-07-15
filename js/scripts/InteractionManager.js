@@ -43,7 +43,7 @@ class InteractionManager {
             //this.orbitGui.setPivot(clickedObject.position);
             if ('desc' in clickedObject) 
             {
-                this.orbitGui.changeText(clickedObject.desc)
+                this.orbitGui.changeText(clickedObject.desc, clickedObject.title)
             };
             
         }
@@ -51,10 +51,10 @@ class InteractionManager {
 
     update(deltaTime) {
         this.multiOrbitController.update(deltaTime);
+
         if (this.orbitGui != null) {
-            this.orbitGui.update();
+            this.orbitGui.update(deltaTime);
         }
-        //this.orbitGui.setRotation(this.multiOrbitController.orbitor.rotation);
     }
 }
 

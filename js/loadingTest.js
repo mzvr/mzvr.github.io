@@ -75,7 +75,7 @@ const models = {
         },
         tags: {
             nameID: 'Shuttle',
-            title: 'Endeavour Space Shuttle',
+            title: '',
             description: ''
         },
         transform: {
@@ -151,7 +151,7 @@ const models = {
         tags: {
             nameID: 'Balaklava',
             title: 'Antarctic Explorer Balaclava',
-            description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. This balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age. '
+            description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. \nThis balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age. '
         },
         transform: {
             position: [-30, -7, -10],
@@ -196,7 +196,7 @@ const models = {
         tags: {
             nameID: 'Kangaroo',
             title: 'Kangaroo Stuffed Toy',
-            description: 'Did you know all NASA astronauts must be American citizens? Dr Andrew Thomas grew up in Adelaide and became an American citizen after moving to the US for his career. Kangaroos are one of the most iconic Aussie symbols and this stuffed toy travelled with Andy on his four space missions. '
+            description: 'Did you know all NASA astronauts must be American citizens? \nDr Andrew Thomas grew up in Adelaide and became an American citizen after moving to the US for his career. Kangaroos are one of the most iconic Aussie symbols and this stuffed toy travelled with Andy on his four space missions. '
         },
         transform: {
             position: [10, 10, -10],
@@ -219,7 +219,7 @@ const models = {
         tags: {
             nameID: 'Hat',
             title: 'Australian Flag Cap',
-            description: ''
+            description: 'Australian flag cap worn by Dr Thomas aboard space shuttle Endeavour on the flight to Mir, as well as during his 130 days on the space station.'
         },
         transform: {
             position: [-21, -6, -23],
@@ -392,7 +392,7 @@ function setupRendering() {
         const fov = 70;
         const aspect = 2;  
         const near = 0.1;
-        const far = 3000;
+        const far = 10000;
         camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
         camera.position.set(30*6, 10*6, 20*6);
         textScene.add(camera);
@@ -433,8 +433,8 @@ function setupLighting() {
         const sungeometry = new THREE.SphereGeometry( 20, 32, 32 );
         const sunmaterial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
         const sun = new THREE.Mesh( sungeometry, sunmaterial );
-        sun.position.set(mainLight.position.x*100, mainLight.position.y*100, mainLight.position.z*100);
-        scene.add( sun );
+        sun.position.set(mainLight.position.x*200, mainLight.position.y*200, mainLight.position.z*200);
+        scene.add(sun);
 
         scene.add(mainLight);
 
@@ -454,8 +454,9 @@ function setupLighting() {
             light1.shadow.camera.right = -sz;
             light1.shadow.camera.top = -sz;
         }
+
         setShadowSize(mainLight,15.0);
-        mainLight.shadow.camera.updateProjectionMatrix();     
+        mainLight.shadow.camera.updateProjectionMatrix();
 
         resolve();
     });
