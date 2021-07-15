@@ -114,28 +114,6 @@ const models = {
             maxDist: 13.268408625781221
         }
     },
-    boomerang: {
-        geometry: {
-            url: './assets/models/boomerang/boomerang.glb'
-        },
-        material: {
-            map: './assets/models/boomerang/boomerangAlbedo.png'
-        },
-        tags: {
-            nameID: 'Boomerang',
-            title: 'Returning Boomerang',
-            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.'
-        },
-        transform: {
-            position: [-5, 0, -20],
-            rotation: [0, 0, 0],
-            scale: [1, 1, 1]
-        },
-        settings: {
-            minDist: 4.078136514915769,
-            maxDist: 13.268408625781221
-        }
-    },
     torch: {
         geometry: {
             url: './assets/models/torch/TorchHP.glb'
@@ -176,7 +154,7 @@ const models = {
             description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. \nThis balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age. '
         },
         transform: {
-            position: [-30, -7, -10],
+            position: [-30, -6, -10],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
         },
@@ -244,7 +222,7 @@ const models = {
             description: 'Australian flag cap worn by Dr Thomas aboard space shuttle Endeavour on the flight to Mir, as well as during his 130 days on the space station.'
         },
         transform: {
-            position: [-21, -6, -23],
+            position: [-21, -8, -23],
             rotation: [0, 0, 0],
             scale: [8, 8, 8]
         },
@@ -295,6 +273,54 @@ const models = {
         settings: {
             minDist: 5.270401889314851,
             maxDist: 181.5160232574907
+        }
+    },
+    boomerang: {
+        geometry: {
+            url: './assets/models/boomerang/boomerang.glb'
+        },
+        material: {
+            map: './assets/models/boomerang/boomerangAlbedo.png'
+        },
+        tags: {
+            nameID: 'Boomerang',
+            title: 'Returning Boomerang',
+            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.'
+        },
+        transform: {
+            position: [-15, -3, 6],
+            rotation: [0, 0, 0],
+            scale: [1, 1, 1]
+        },
+        settings: {
+            minDist: 4.078136514915769,
+            maxDist: 13.268408625781221
+        }
+    },
+    badge: {
+        geometry: {
+            url: './assets/models/badge/badge.glb'
+        },
+        material: {
+            map: './assets/models/badge/badgeAlbedo.png',
+            roughnessMap: './assets/models/badge/badgeRough.png',
+            metalnessMap: './assets/models/badge/badgeMetal.png',
+            normalMap: './assets/models/badge/badgeNorm.png',
+            metalness: 1.0
+        },
+        tags: {
+            nameID: 'Badge',
+            title: 'South Australian Police Badge',
+            description: 'This police badge was flown aboard the Space Shuttle Discovery that launched from the Kennedy Space Centre in 2005. It completed 219 orbits of the earth, travelled 5,796,419 miles at a maximum speed of 17,694 mph. Upon return to earth, Dr Thomas presented it to the South Australian Police Force.'
+        },
+        transform: {
+            position: [-32, 3, -20],
+            rotation: [0, 0, 0],
+            scale: [0.22, 0.22, 0.22]
+        },
+        settings: {
+            minDist: 4.078136514915769,
+            maxDist: 13.268408625781221
         }
     }
 }
@@ -599,6 +625,10 @@ function loadModels() {
                 objects.push(result), 
                 scene.add(result) 
             }),
+            loadMesh(models.badge).then(result => { 
+                objects.push(result), 
+                scene.add(result) 
+            }),
             loadMesh(models.balaklava).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
@@ -740,8 +770,10 @@ function windowHeight()
 
 function onWindowResize() {
 
-    var newWidth = windowWidth();
-    var newHeight = windowHeight();
+    var renderScale = window.devicePixelRatio > 1 ? window.devicePixelRatio * 0.75 : 1;
+
+    var newWidth = windowWidth() * renderScale;
+    var newHeight = windowHeight() * renderScale;
   
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

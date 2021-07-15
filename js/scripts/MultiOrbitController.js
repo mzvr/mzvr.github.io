@@ -28,7 +28,7 @@ class MultiOrbitController {
     }
 
     // sets new position in world space to orbit around
-    setNewTarget( newTarget ) 
+    setNewTarget( newTarget, zoom=this.zoomDistance ) 
     {
         if (newTarget.equals(this.orbitControls.target)) return;
 
