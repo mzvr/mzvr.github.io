@@ -426,7 +426,7 @@ function setupRendering() {
     return new Promise(resolve => {
         canvas = document.querySelector('#c');
 
-        renderer = new THREE.WebGLRenderer({canvas});
+        renderer = new THREE.WebGLRenderer({canvas: canvas, powerPreference: "high-performance"});
         renderer.outputEncoding = THREE.LinearEncoding;
         renderer.physicallyCorrectLights = true;
         renderer.autoClearColor = false;
