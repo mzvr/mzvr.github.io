@@ -9,6 +9,7 @@ import { ShaderPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postpro
 import { UnrealBloomPass } from './ThreeJS/UnrealBloomPass.js';
 import { GammaCorrectionShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/GammaCorrectionShader.js';
 import { SMAAPass } from 'https://unpkg.com/three@0.126.1/examples/jsm/postprocessing/SMAAPass.js';
+import { FXAAShader } from 'https://unpkg.com/three@0.126.1/examples/jsm/shaders/FXAAShader.js';
 
 import { GlassMaterial } from './scripts/GlassMaterial.js';
 
@@ -33,7 +34,7 @@ const textureKeys = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap'
 let canvas, stats, gui;
 let clock, deltaTime, totalTime; 
 let camera, scene, textScene, renderer, composer;
-let bloomPass, gammaPass, SMAApass;
+let bloomPass, gammaPass, fxaaPass;
 let mainLight;
 let reflectionMap, ambientLightMap;
 
@@ -449,8 +450,10 @@ function setupRendering() {
         composer = new EffectComposer( renderer );
         composer.addPass( new RenderPass( scene, camera ) );
         
-        SMAApass = new SMAAPass( windowWidth(), windowHeight() );
-        composer.addPass( SMAApass );
+        fxaaPass = new ShaderPass( FXAAShader );
+		fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / windowWidth();
+		fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / windowHeight();
+        composer.addPass( fxaaPass );
 
         bloomPass = new UnrealBloomPass( 
             new THREE.Vector2( windowWidth(), windowHeight() ), 
@@ -760,25 +763,27 @@ function render() {
 
 function windowWidth()
 {
-    return window.innerWidth * window.devicePixelRatio * settings.renderQuality;
+    return window.innerWidth *  (window.devicePixelRatio > 1 ? window.devicePixelRatio * 0.75 : window.devicePixelRatio) * settings.renderQuality;
 }
 
 function windowHeight()
 {
-    return window.innerHeight * window.devicePixelRatio * settings.renderQuality;
+    return window.innerHeight *  (window.devicePixelRatio > 1 ? window.devicePixelRatio * 0.75 : window.devicePixelRatio) * settings.renderQuality;
 }
 
 function onWindowResize() {
 
-    var renderScale = window.devicePixelRatio > 1 ? window.devicePixelRatio * 0.75 : 1;
+    //var renderScale =;
 
-    var newWidth = windowWidth() * renderScale;
-    var newHeight = windowHeight() * renderScale;
+    var newWidth = windowWidth();
+    var newHeight = windowHeight();
   
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
   
     renderer.setSize( newWidth, newHeight, false );
     composer.setSize( newWidth, newHeight );
-  
+
+    fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / windowWidth();
+	fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / windowHeight();
 }
