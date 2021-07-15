@@ -75,8 +75,8 @@ const models = {
         },
         tags: {
             nameID: 'Shuttle',
-            title: 'Discovery Space Shuttle',
-            description: 'Space Shuttle'
+            title: 'Endeavour Space Shuttle',
+            description: ''
         },
         transform: {
             position: [0, 0, 0],
@@ -84,6 +84,8 @@ const models = {
             scale: [1, 1, 1]
         },
         settings: {
+            minDist: 21.052631578947278,
+            maxDist: 181.5160232574907,
             enableShadows: true
         }
     },
@@ -106,6 +108,10 @@ const models = {
             position: [-5, 3, -20],
             rotation: [0, 0, 0],
             scale: [1, 1, 1]
+        },
+        settings: {
+            minDist: 4.078136514915769,
+            maxDist: 13.268408625781221
         }
     },
     torch: {
@@ -125,8 +131,12 @@ const models = {
         },
         transform: {
             position: [-30, 0, 3],
-            rotation: [0, 0, 0],
-            scale: [.1, .1, .1]
+            rotation: [200, 0, 0],
+            scale: [.15, .15, .15]
+        },
+        settings: {
+            minDist: 5.270401889314851,
+            maxDist: 13.268408625781227
         }
     },
     balaklava: {
@@ -147,6 +157,10 @@ const models = {
             position: [-30, -7, -10],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
+        },
+        settings: {
+            minDist: 2.5702431313020475,
+            maxDist: 15.475618749999972
         }
     },
     glove: {
@@ -159,12 +173,16 @@ const models = {
         tags: {
             nameID: 'Glove',
             title: 'Cosmonaut Glove',
-            description: 'glovegloveglove'
+            description: ''
         },
         transform: {
             position: [-23, -3, -32],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
+        },
+        settings: {
+            minDist: 5.270401889314851,
+            maxDist: 13.268408625781397
         }
     },
     kangaroo: {
@@ -184,6 +202,10 @@ const models = {
             position: [10, 10, -10],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
+        },
+        settings: {
+            minDist: 2.997805080976326,
+            maxDist: 14.701837812499928
         }
     },
     hat: {
@@ -196,13 +218,17 @@ const models = {
         },
         tags: {
             nameID: 'Hat',
-            title: 'Australia Hat',
-            description: 'hathathat'
+            title: 'Australian Flag Cap',
+            description: ''
         },
         transform: {
             position: [-21, -6, -23],
             rotation: [0, 0, 0],
-            scale: [7, 7, 7]
+            scale: [8, 8, 8]
+        },
+        settings: {
+            minDist: 2.705519085581132,
+            maxDist: 11.376001845529183
         }
     },
     meteor: {
@@ -215,12 +241,16 @@ const models = {
         tags: {
             nameID: 'Meteor',
             title: 'Meteor',
-            description: 'meteormeteormeteor'
+            description: ''
         },
         transform: {
             position: [-23, -9, 12],
             rotation: [0, 0, 0],
             scale: [1, 1, 1]
+        },
+        settings: {
+            minDist: 5.270401889314851,
+            maxDist: 181.5160232574907
         }
     },
     smlmeteor: {
@@ -233,12 +263,16 @@ const models = {
         tags: {
             nameID: 'smlMeteor',
             title: 'Small Meteor',
-            description: 'smlmeteorsmlmeteorsmlmeteor'
+            description: ''
         },
         transform: {
             position: [-13, 9, 12],
             rotation: [0, 0, 0],
             scale: [7, 7, 7]
+        },
+        settings: {
+            minDist: 5.270401889314851,
+            maxDist: 181.5160232574907
         }
     }
 }
@@ -254,13 +288,14 @@ function createStats() {
     stats.domElement.style.left = '0';
     stats.domElement.style.top = '0';
 
+    document.body.appendChild( stats.domElement );
+
     return stats;
 }
 
 function createGUI() {
     var gui = new GUI();
-    document.body.appendChild( stats.domElement );
-
+    
     gui.add(params, 'rotation');
     gui.add( params, 'brightness', 0.1, 10 ).onChange( function ( value ) {
         mainLight.intensity = value;
@@ -359,7 +394,7 @@ function setupRendering() {
         const near = 0.1;
         const far = 3000;
         camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.position.set(30, 10, 20);
+        camera.position.set(30*6, 10*6, 20*6);
         textScene.add(camera);
         
         // rendering order
@@ -389,10 +424,18 @@ function setupRendering() {
 
 function setupLighting() {
     return new Promise(resolve => {
-        mainLight = new THREE.DirectionalLight(0xFFFFE9, params.brightness);
+        mainLight = new THREE.DirectionalLight(0xE9E9FFFF, params.brightness);
+
         mainLight.position.y = 4.3 * 2;
         mainLight.position.z = 5*Math.sin(-2.3) * 4;
         mainLight.position.x = 5*Math.cos(-2.3) * 4;
+
+        const sungeometry = new THREE.SphereGeometry( 20, 32, 32 );
+        const sunmaterial = new THREE.MeshBasicMaterial( {color: 0xffffff} );
+        const sun = new THREE.Mesh( sungeometry, sunmaterial );
+        sun.position.set(mainLight.position.x*100, mainLight.position.y*100, mainLight.position.z*100);
+        scene.add( sun );
+
         scene.add(mainLight);
 
         renderer.shadowMap.enabled = true;
@@ -549,10 +592,10 @@ function loadModels() {
                 objects.push(result), 
                 scene.add(result) 
             }),
-            loadMesh(models.meteor).then(result => { 
-                objects.push(result), 
-                scene.add(result) 
-            }),
+            //loadMesh(models.meteor).then(result => { 
+            //    objects.push(result), 
+            //    scene.add(result) 
+            //}),
             loadMesh(models.smlmeteor).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
@@ -580,8 +623,8 @@ function loadScene() {
 
 // setup winow and load assets
 function initialise() {
-    stats = createStats();
-    gui = createGUI();
+    //stats = createStats();
+    //gui = createGUI();
     clock = new THREE.Clock();
 
     setupRendering()
@@ -595,7 +638,7 @@ function initialise() {
 
         // Create the final object to add to the scene
         const curveObject = new THREE.Line( geometry, material );
-        scene.add(curveObject);
+        //scene.add(curveObject);
 
         // need to call render once to finish setup
         render();
@@ -613,14 +656,14 @@ function initialise() {
 // main game loop
 function animate() {
     
-    stats.begin();
+    //stats.begin();
 
     // game loop
     updateClock();
     update();
     render();
 
-    stats.end();
+    //stats.end();
 
     requestAnimationFrame( animate );
 }
@@ -641,7 +684,7 @@ function update() {
 
         while (axes.length < objects.length)
         {
-            axes.push(new THREE.Vector3(Math.random()*2-1,Math.random()*2-1,Math.random()*2-1).normalize());
+            axes.push(new THREE.Vector3(Math.random()-0.5,Math.random()*2-1,Math.random()-0.5).normalize());
             speeds.push((Math.random < 0.5 ? -1 : 1) * Math.random() * 0.005 + 0.0025);
         }
 
