@@ -102,7 +102,7 @@ const models = {
         tags: {
             nameID: 'Crest',
             title: 'Framed University of Adelaide crest',
-            description: 'Many astronauts arrange for small mementos to travel as part of the Official Flight Kit. Upon return from space, they are often gifted to organisations as a token of support. Dr Andy Thomas gained a PhD in fluid mechanics at the University of Adelaide, and gifted this crest to University’s Alumni Association.'
+            description: 'Many astronauts arrange for small mementos to travel as part of the Official Flight Kit. Upon return from space, they are often gifted to organisations as a token of support. Dr Andy Thomas gained a PhD in fluid mechanics at the University of Adelaide, and gifted this crest to University\'s Alumni Association.'
         },
         transform: {
             position: [-5, 3, -20],
@@ -285,7 +285,7 @@ const models = {
         tags: {
             nameID: 'Boomerang',
             title: 'Returning Boomerang',
-            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas\'s great-great-grandfather, was the museum’s curator.'
+            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum\'s collection since FG Waterhouse, Dr Thomas\'s great-great-grandfather, was the museum\'s curator.'
         },
         transform: {
             position: [-15, -3, 6],
