@@ -127,7 +127,7 @@ const models = {
         tags: {
             nameID: 'Torch',
             title: 'Sydney Olympic Torch',
-            description: 'It’s the year 2000 and the stage is set for the greatest Olympics the world has ever seen. For months, engineers at the University of Adelaide have been designing the inter-workings of the Sydney Olympic torch. Subsequently Dr Thomas coordinated efforts for the torch to circle the earth aboard the International Space Station.    '
+            description: "It\'s the year 2000 and the stage is set for the greatest Olympics the world has ever seen. For months, engineers at the University of Adelaide have been designing the inter-workings of the Sydney Olympic torch. Subsequently Dr Thomas coordinated efforts for the torch to circle the earth aboard the International Space Station."
         },
         transform: {
             position: [-30, 0, 3],
@@ -151,7 +151,7 @@ const models = {
         tags: {
             nameID: 'Balaklava',
             title: 'Antarctic Explorer Balaclava',
-            description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. \nThis balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age. '
+            description: 'The early Antarctic explorers faced similar challenges to astronauts. You must carry everything you need for your survival. \nThis balaclava was part of the kit worn by Sir Douglas Mawson and his crew. A master of survival, Mawson proved himself to be one of the greatest explorers of the age.'
         },
         transform: {
             position: [-30, -6, -10],
@@ -196,7 +196,7 @@ const models = {
         tags: {
             nameID: 'Kangaroo',
             title: 'Kangaroo Stuffed Toy',
-            description: 'Did you know all NASA astronauts must be American citizens? \nDr Andrew Thomas grew up in Adelaide and became an American citizen after moving to the US for his career. Kangaroos are one of the most iconic Aussie symbols and this stuffed toy travelled with Andy on his four space missions. '
+            description: 'Did you know all NASA astronauts must be American citizens? \nDr Andrew Thomas grew up in Adelaide and became an American citizen after moving to the US for his career. Kangaroos are one of the most iconic Aussie symbols and this stuffed toy travelled with Andy on his four space missions.'
         },
         transform: {
             position: [10, 10, -10],
@@ -285,7 +285,7 @@ const models = {
         tags: {
             nameID: 'Boomerang',
             title: 'Returning Boomerang',
-            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas’s great-great-grandfather, was the museum’s curator.'
+            description: 'Space shuttles and returning Boomerangs – both require a mastery of aerodynamics to fly. This Boomerang was flown with Dr Thomas aboard space shuttle Endeavour in 1996. It has been in South Australian Museum’s collection since FG Waterhouse, Dr Thomas\'s great-great-grandfather, was the museum’s curator.'
         },
         transform: {
             position: [-15, -3, 6],
@@ -714,15 +714,11 @@ function initialise() {
 
 // main game loop
 function animate() {
-    
-    //stats.begin();
 
     // game loop
     updateClock();
     update();
     render();
-
-    //stats.end();
 
     requestAnimationFrame( animate );
 }
