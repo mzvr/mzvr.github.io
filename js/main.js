@@ -21,6 +21,16 @@ import { OrbitGui } from './scripts/OrbitGui.js';
 import { CameraRaycaster } from './scripts/CameraRaycaster.js';
 import { InteractionManager } from './scripts/InteractionManager.js';
 
+var D_time = 0;
+
+function repeater() {
+    document.title = "aaa" + D_time;
+    D_time+=1;
+    setTimeout(repeater, 1);
+}
+
+//setTimeout(repeater, 1);
+
 // useful constants
 const PI = 3.14159;
 const Rad2Deg = 180.0 / PI;
@@ -384,10 +394,12 @@ function loadTexture(url) {
 // wrapper for loading gltf files
 function loadGeometry(url, calculateTangents = false) {
     return new Promise(resolve => {
+        
         loadGLTF(url).then(result => {
             if (calculateTangents) {
                 result.scene.children[0].geometry.computeTangents();
             }
+            LogMsg("Returning mesh: " + url);
             resolve(result.scene.children[0].geometry);
         })
     });
@@ -396,12 +408,14 @@ function loadGeometry(url, calculateTangents = false) {
 // use loadGeometry instead to get vertex data
 function loadGLTF(url) {
     return new Promise(resolve => {
+        LogMsg("Loading mesh: " + url);
         const loader = new GLTFLoader().load(url, resolve);
     });
 }
 
 function loadEXR(url) {
     return new Promise(resolve => {
+        LogMsg("Load EXR: " + url);
         const loader = new EXRLoader().setDataType( THREE.UnsignedByteType );
         loader.load(url, resolve);
     });
@@ -409,19 +423,25 @@ function loadEXR(url) {
 
 function loadEnvTextures() {
     return new Promise (resolve => {
+        LogMsg("Start loading cubemaps");
         const pmremGenerator = new THREE.PMREMGenerator( renderer );
         pmremGenerator.compileEquirectangularShader();
 
-        Promise.all([
-        loadEXR('./assets/textures/environment/skybox3K.exr').then(result => {
-            reflectionMap = result;
-        }),
-        loadEXR('./assets/textures/environment/skyboxMipmap.exr').then(result => {
-            ambientLightMap = pmremGenerator.fromEquirectangular( result ).texture;
-            pmremGenerator.dispose();
-            result.dispose();
+        Promise.allSettled([
+            loadEXR('./assets/textures/environment/skybox2Kraw.exr').then(result => {
+                reflectionMap = result;
+                LogMsg("Loaded amb light");
+            }),
+            loadEXR('./assets/textures/environment/skyboxMipmap.exr').then(result => {
+                ambientLightMap = pmremGenerator.fromEquirectangular( result ).texture;
+                pmremGenerator.dispose();
+                result.dispose();
+                LogMsg("Loaded sharp reflection");
         })])
-        .then(() => resolve())
+        .then(() => {
+            LogMsg("set env textures"); 
+            resolve()
+        });
     });
 }
 
@@ -434,6 +454,8 @@ function setupSkybox() {
             const rt = new THREE.WebGLCubeRenderTarget(result.image.height);
             rt.fromEquirectangularTexture(renderer, result);
             scene.background = rt;
+
+            LogMsg("set skybox")
 
             resolve();
         });
@@ -486,6 +508,8 @@ function setupRendering() {
         onWindowResize();
         window.addEventListener( 'resize', onWindowResize );
 
+        LogMsg("setup rendering")
+
         resolve();
     });
 }
@@ -526,12 +550,13 @@ function setupLighting() {
         setShadowSize(mainLight,15.0);
         mainLight.shadow.camera.updateProjectionMatrix();
 
+        LogMsg("setup lighting");
+
         resolve();
     });
 }
 
-function setupInteraction()
-{
+function setupInteraction() {
     return new Promise (resolve => {
         const controls = new OrbitControls( camera, renderer.domElement );
         controls.enablePan = true;
@@ -544,6 +569,8 @@ function setupInteraction()
         var raycaster = new CameraRaycaster(camera, objects);
         interactionManager = new InteractionManager(multiController, raycaster, orbitGui);
 
+        LogMsg("loaded interaction")
+
         resolve();
     });
 }
@@ -551,7 +578,7 @@ function setupInteraction()
 function loadMesh(model) {
     const promises = [
         loadGeometry(model.geometry.url, 'normalMap' in model.material),
-        loadMaterial(model.material)
+        loadMaterial(model.material, model.tags.nameID)
     ];
 
     return Promise.all(promises).then(result => {
@@ -565,7 +592,7 @@ function loadMesh(model) {
 
         if ('tags' in model) { 
             // attatch text
-            newMesh.name = model.tags.name;
+            newMesh.name = model.tags.nameID;
             newMesh.title = model.tags.title;
             newMesh.desc = model.tags.description;
         }
@@ -579,22 +606,23 @@ function loadMesh(model) {
             }
         }
 
+        LogMsg("Added to scene: " + model.tags.nameID);
+
         return newMesh;
     });
 }
 
-function loadMaterial(model) {
-
+function loadMaterial(material, name="") {
     // default params
     const params = { 
         envMapIntensity: 2, 
         envMap: ambientLightMap 
     };
 
-    const promises = Object.keys(model).map(key => {
+    const promises = Object.keys(material).map(key => {
         // load textures for supported keys
         if (textureKeys.indexOf(key) !== -1) {
-            return loadTexture(model[key]).then(texture => {
+            return loadTexture(material[key]).then(texture => {
 
             if (key=='map') {
                 texture.encoding = THREE.sRGBEncoding;
@@ -609,18 +637,22 @@ function loadMaterial(model) {
         });
         // just copy the value otherwise  
         } else {
-            params[key] = model[key];
+            params[key] = material[key];
         }
     });
     
+    LogMsg("Start building material: " + name);
+    
     return Promise.all(promises).then(() => {
-      return new THREE.MeshStandardMaterial(params);
+        LogMsg("Finished building material: " + name);
+        return new THREE.MeshStandardMaterial(params);
     });
 }
 
 function loadModels() {
     return new Promise (resolve => {
-        Promise.all([
+        LogMsg("Start loading models");
+        Promise.allSettled([
             loadMesh(models.shuttle).then(result => { 
                 objects.unshift(result),
                 scene.add(result) 
@@ -652,7 +684,10 @@ function loadModels() {
             loadMesh(models.balaklava).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
-            }),
+            })
+        ])
+        .then(delay(1))
+        .then(() => Promise.allSettled([
             loadMesh(models.glove).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
@@ -669,16 +704,13 @@ function loadModels() {
                 objects.push(result), 
                 scene.add(result) 
             }),
-            //loadMesh(models.meteor).then(result => { 
-            //    objects.push(result), 
-            //    scene.add(result) 
-            //}),
             loadMesh(models.smlmeteor).then(result => { 
                 objects.push(result), 
                 scene.add(result) 
-            }),
-        ])
+            })
+        ]))
         .then(() => {
+            LogMsg("Finished loading models");
             resolve();
         })
     });
@@ -687,19 +719,23 @@ function loadModels() {
 function loadScene() {
     return new Promise (resolve => {
 
-        Promise.all([
+        Promise.allSettled([
             setupSkybox(),
             setupLighting(),
             loadEnvTextures()
         ])
+        .then(delay(1))
         .then(() => loadModels())
+        .then(delay(1))
         .then(() => setupInteraction())
         .then(() => resolve());
     });
 }
 
 // setup winow and load assets
-function initialise() {
+async function initialise() {
+    LogMsg("Begin Initalise");
+
     //stats = createStats();
     gui = createGUI();
     clock = new THREE.Clock();
@@ -707,7 +743,6 @@ function initialise() {
     setupRendering()
     .then(() => loadScene())
     .then(() => {
-
         const points = introcurve.getPoints( 50 );
         const geometry = new THREE.BufferGeometry().setFromPoints( points );
 
@@ -721,9 +756,9 @@ function initialise() {
         render();
 
         // at this point scene is loaded onto user device
-        // may not be ready to display though
+        // may not be ready to render though
         // seems to be loading from memory to gpu
-        console.log("Finished loading");
+        LogMsg("Finished Initalise");
 
         // start game
         animate();
@@ -796,4 +831,18 @@ function onWindowResize() {
 
     fxaaPass.material.uniforms[ 'resolution' ].value.x = 1 / windowWidth();
 	fxaaPass.material.uniforms[ 'resolution' ].value.y = 1 / windowHeight();
+}
+
+function delay(time) {
+    return new Promise (resolve => {
+        setTimeout(()=>resolve(), time);
+    });
+}
+
+var timerStart = Date.now();
+
+function LogMsg(msg) {
+    const debugMode = false;
+    if (debugMode)
+        console.log(msg + " " + (Date.now()-timerStart));
 }
