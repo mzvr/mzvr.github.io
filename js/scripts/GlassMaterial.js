@@ -68,13 +68,19 @@ class GlassMaterial extends THREE.ShaderMaterial{
                     (USE_NORMAL ? `
                     vec3 norm = TBN * (texture(normalMap, _uv).xyz * 2.0 - 1.0);
                     vec3 refl = reflect(ray, norm);
-                    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
-                    vec3 rgb = decodeRGBE(rgbe);
+
+                    //vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
+                    //vec3 rgb = decodeRGBE(rgbe);
+                    vec3 rgb = texture(envMap, SampleEquirectMap(refl)).xyz;
+
                     float fresnel = 1.0 + dot(ray, norm);` 
                     : `
                     vec3 refl = reflect(ray, worldNorm);
-                    vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
-                    vec3 rgb = decodeRGBE(rgbe);
+
+                    //vec4 rgbe = texture(envMap, SampleEquirectMap(refl));
+                    //vec3 rgb = decodeRGBE(rgbe);
+                    vec3 rgb = texture(envMap, SampleEquirectMap(refl)).xyz;
+
                     float fresnel = 1.0 + dot(ray, worldNorm);`)
                     + `
                     fresnel = max(fresnel * fresnel, MIN_ALPHA);

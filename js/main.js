@@ -370,7 +370,7 @@ function createGUI() {
     gui.add( settings, 'bloomRadius', 0.0, 1.0 ).onChange( function ( value ) {
         bloomPass.radius = Number( value );
     } );
-    gui.add( settings, 'sunRotation', -3.1415, 3.1415 ).onChange( function ( value ) {
+    gui.add( settings, 'sunRotation', -3.1415 * 2, 3.1415 * 2).onChange( function ( value ) {
         mainLight.position.y = 4.3 * 2;
         mainLight.position.z = 5*Math.sin(value) * 4;
         mainLight.position.x = 5*Math.cos(value) * 4;
@@ -428,15 +428,15 @@ function loadEnvTextures() {
         pmremGenerator.compileEquirectangularShader();
 
         Promise.allSettled([
-            loadEXR('./assets/textures/environment/skybox2Kraw.exr').then(result => {
-                reflectionMap = result;
-                LogMsg("Loaded amb light");
-            }),
+            //loadEXR('./assets/textures/environment/skybox2Kraw.exr').then(result => {
+                //reflectionMap = result;
+            //    LogMsg("Loaded sharp reflection");
+            //}),
             loadEXR('./assets/textures/environment/skyboxMipmap.exr').then(result => {
                 ambientLightMap = pmremGenerator.fromEquirectangular( result ).texture;
                 pmremGenerator.dispose();
                 result.dispose();
-                LogMsg("Loaded sharp reflection");
+                LogMsg("Loaded ambient light");
         })])
         .then(() => {
             LogMsg("set env textures"); 
@@ -447,9 +447,11 @@ function loadEnvTextures() {
 
 function setupSkybox() {
     return new Promise (resolve => {
-        loadTexture('./assets/textures/skybox/skybox7.png')
+        loadTexture('./assets/textures/skybox/skybox7mobile.png')
         .then(result => {
             result.encoding = THREE.sRGBEncoding;
+
+            reflectionMap = result;
 
             const rt = new THREE.WebGLCubeRenderTarget(result.image.height);
             rt.fromEquirectangularTexture(renderer, result);
@@ -743,13 +745,12 @@ async function initialise() {
     setupRendering()
     .then(() => loadScene())
     .then(() => {
-        const points = introcurve.getPoints( 50 );
-        const geometry = new THREE.BufferGeometry().setFromPoints( points );
-
-        const material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
+        //const points = introcurve.getPoints( 50 );
+        //const geometry = new THREE.BufferGeometry().setFromPoints( points );
+        //const material = new THREE.LineBasicMaterial( { color : 0xff0000 } );
 
         // Create the final object to add to the scene
-        const curveObject = new THREE.Line( geometry, material );
+        //const curveObject = new THREE.Line( geometry, material );
         //scene.add(curveObject);
 
         // need to call render once to finish setup
@@ -772,7 +773,6 @@ function animate() {
     updateClock();
     update();
     render();
-
     requestAnimationFrame( animate );
 }
 
